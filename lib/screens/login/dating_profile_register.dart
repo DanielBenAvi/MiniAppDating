@@ -1,41 +1,55 @@
 import 'package:flutter/material.dart';
+import 'package:social_hive_client/model/PrivateDatingProfile.dart';
+import 'package:social_hive_client/model/UserDetails.dart';
+import 'package:social_hive_client/model/singleton_user.dart';
 import 'dart:io';
 import '../../constants/Gender.dart';
+import '../../model/PublicDatingProfile.dart';
+import '../../model/boundaries/object_boundary.dart';
+import '../../rest_api/user_api.dart';
 
 class DatingProfileScreen extends StatefulWidget {
-  const DatingProfileScreen({Key? key}) : super(key: key);
+  final SingletonUser user;
+  final UserDetails userDetails;
+
+
+  const DatingProfileScreen({
+    Key? key,
+    required this.user,
+    required this.userDetails,
+  }) : super(key: key);
 
   @override
   _DatingProfileScreenState createState() => _DatingProfileScreenState();
 }
 
 class _DatingProfileScreenState extends State<DatingProfileScreen> {
-  TextEditingController _bioController = TextEditingController();
-  TextEditingController _distancePreferenceController = TextEditingController();
 
+  final TextEditingController _bioController = TextEditingController();
   Gender? _selectedGender;
-  List<Gender> _selectedSexualPreference = [];
+  final List<Gender> _selectedSexualPreference = [];
   DateTime? _selectedDateOfBirth;
   File? _selectedImage;
-
   RangeValues _ageRangeValues = const RangeValues(18, 40);
   RangeValues _distanceRangeValues = const RangeValues(0, 100);
-
   final _formKey = GlobalKey<FormState>();
 
-  void _registerDatingProfile() {
-    if (_formKey.currentState!.validate()) {
-      final String bio = _bioController.text;
-      final double distancePreference = _distanceRangeValues.end;
-      final List<Gender> sexualPreferences = _selectedSexualPreference;
 
-      print('Bio: $bio');
-      print('Distance Preference: $distancePreference');
-      print('Age Range: ${_ageRangeValues.start.toInt()} - ${_ageRangeValues.end.toInt()}');
-      print('Gender Preferences: $sexualPreferences');
-      print('Profile Picture: ${_selectedImage?.path}');
+  int calculateAge(DateTime dateOfBirth) {
+    DateTime currentDate = DateTime.now();
+    int age = currentDate.year - dateOfBirth.year;
+
+    if (currentDate.month < dateOfBirth.month ||
+        (currentDate.month == dateOfBirth.month && currentDate.day < dateOfBirth.day)) {
+      age--;
     }
+
+    return age;
   }
+
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -46,14 +60,14 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
           filled: true,
           fillColor: Colors.white,
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
+            borderSide: const BorderSide(color: Colors.white),
             borderRadius: BorderRadius.circular(8.0),
           ),
           enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
+            borderSide: const BorderSide(color: Colors.white),
             borderRadius: BorderRadius.circular(8.0),
           ),
-          labelStyle: TextStyle(color: Colors.pinkAccent),
+          labelStyle: const TextStyle(color: Colors.pinkAccent),
         ),
       ),
       home: Scaffold(
@@ -78,7 +92,7 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
                   },
                 ),
                 const SizedBox(height: 16.0),
-                Text(
+                const Text(
                   'Date of Birth:',
                   style: TextStyle(fontSize: 16.0, color: Colors.pinkAccent),
                 ),
@@ -99,7 +113,7 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
                     });
                   },
                   child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+                    padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.grey),
                       borderRadius: BorderRadius.circular(8.0),
@@ -114,7 +128,7 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
                 const SizedBox(height: 16.0),
                 Text(
                   'Age Range: ${_ageRangeValues.start.toInt()} - ${_ageRangeValues.end.toInt()}',
-                  style: TextStyle(fontSize: 16.0, color: Colors.pinkAccent),
+                  style: const TextStyle(fontSize: 16.0, color: Colors.pinkAccent),
                 ),
                 const SizedBox(height: 8.0),
                 RangeSlider(
@@ -133,7 +147,7 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
                   },
                 ),
                 const SizedBox(height: 16.0),
-                Text(
+                const Text(
                   'Gender:',
                   style: TextStyle(fontSize: 16.0, color: Colors.pinkAccent),
                 ),
@@ -162,7 +176,7 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
                   },
                 ),
                 const SizedBox(height: 16.0),
-                Text(
+                const Text(
                   'Sexual Preference:',
                   style: TextStyle(fontSize: 16.0, color: Colors.pinkAccent),
                 ),
@@ -201,7 +215,7 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
                 const SizedBox(height: 16.0),
                 Text(
                   'Distance Preference: ${_distanceRangeValues.end.toInt()} km',
-                  style: TextStyle(fontSize: 16.0, color: Colors.pinkAccent),
+                  style: const TextStyle(fontSize: 16.0, color: Colors.pinkAccent),
                 ),
                 const SizedBox(height: 8.0),
                 Slider(
@@ -227,5 +241,43 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
         ),
       ),
     );
+  }
+
+  void _registerDatingProfile() {
+    if (_formKey.currentState!.validate()) {
+      PublicDatingProfile publicDP = PublicDatingProfile(nickName: widget.userDetails.name, gender: _selectedGender,
+          age: calculateAge(_selectedDateOfBirth!), bio: _bioController.text);
+
+      PrivateDatingProfile privateDP = PrivateDatingProfile(dateOfBirthday:_selectedDateOfBirth,
+          distanceRange: _distanceRangeValues.end.toInt(), publicProfile: publicDP,
+          maxAge: _ageRangeValues.end.toInt(), minAge: _ageRangeValues.start.toInt(), phoneNumber: widget.userDetails.phoneNum,
+          genderPreferences: _selectedSexualPreference);
+      _createUser(widget.user);
+      //todo: fix this so it will get object boundary and not list
+      print(_createUserDetails());
+      print(privateDP.toString());
+
+    }
+  }
+
+  Future _createUser(SingletonUser singletonUser) async {
+    Map<String, dynamic> user = {
+      'email': singletonUser.email,
+      'username': singletonUser.username,
+      'role': singletonUser.role,
+      'avatar': singletonUser.avatar,
+    };
+
+    await UserApi().postUser(user);
+  }
+
+  Future _createUserDetails() async {
+    ObjectBoundary? object = await UserApi().postUserDetails(
+      widget.userDetails.name as String,
+      widget.userDetails.phoneNum as String,
+      widget.userDetails.preferences, 10.2, 10.2
+    );
+
+    return object;
   }
 }

@@ -31,13 +31,13 @@ class UserApi extends BaseApi {
   }
 
   Future<ObjectBoundary?> postUserDetails(
-      String name, String phoneNum, List<String> preferences) async {
+      String name, String phoneNum, List<String> preferences, double lat, double lng) async {
     Map<String, dynamic> userDetails = {
       "objectId": {},
       "type": "USER_DETAILS",
       "alias": "userDetails",
       "active": true,
-      "location": {"lat": 10.200, "lng": 10.200},
+      "location": {"lat": lat, "lng": lng},
       "createdBy": {
         "userId": {"superapp": superApp, "email": user.email}
       },

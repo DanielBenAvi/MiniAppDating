@@ -6,7 +6,9 @@ import 'package:social_hive_client/rest_api/user_api.dart';
 
 import '../../constants/preferences.dart';
 import '../../model/item_object.dart';
+import '../../model/UserDetails.dart';
 import '../../widgets/multi_select_dialog.dart';
+import 'dating_profile_register.dart';
 
 class ScreenRegister extends StatefulWidget {
   const ScreenRegister({Key? key}) : super(key: key);
@@ -63,11 +65,11 @@ class _ScreenRegisterState extends State<ScreenRegister> {
                       filled: true,
                       fillColor: Colors.white,
                       focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.pink),
+                        borderSide: const BorderSide(color: Colors.pink),
                         borderRadius: BorderRadius.circular(8.0),
                       ),
                     ),
-                    style: TextStyle(color: Colors.black),
+                    style: const TextStyle(color: Colors.black),
                     validator: ValidationBuilder().email().maxLength(50).build(),
                   ),
                   const SizedBox(height: 20),
@@ -82,7 +84,7 @@ class _ScreenRegisterState extends State<ScreenRegister> {
                         borderRadius: BorderRadius.circular(8.0),
                       ),
                     ),
-                    style: TextStyle(color: Colors.black),
+                    style: const TextStyle(color: Colors.black),
                     validator: ValidationBuilder().minLength(3).maxLength(20).build(),
                   ),
                   const SizedBox(height: 20),
@@ -107,11 +109,11 @@ class _ScreenRegisterState extends State<ScreenRegister> {
                       filled: true,
                       fillColor: Colors.white,
                       focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.pink),
+                        borderSide: const BorderSide(color: Colors.pink),
                         borderRadius: BorderRadius.circular(8.0),
                       ),
                     ),
-                    style: TextStyle(color: Colors.black),
+                    style: const TextStyle(color: Colors.black),
                     validator: ValidationBuilder().minLength(3).maxLength(20).build(),
                   ),
                   const SizedBox(height: 20),
@@ -122,11 +124,11 @@ class _ScreenRegisterState extends State<ScreenRegister> {
                       filled: true,
                       fillColor: Colors.white,
                       focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.pink),
+                        borderSide: const BorderSide(color: Colors.pink),
                         borderRadius: BorderRadius.circular(8.0),
                       ),
                     ),
-                    style: TextStyle(color: Colors.black),
+                    style: const TextStyle(color: Colors.black),
                     validator: ValidationBuilder().phone().maxLength(50).build(),
                   ),
                   const SizedBox(height: 20),
@@ -165,16 +167,25 @@ class _ScreenRegisterState extends State<ScreenRegister> {
 
   void _continue() {
     SingletonUser singletonUser = _setSingletonUser();
-    _createUser(singletonUser);
-    _createUserDetails();
-    _screenDatingProfile();
+    UserDetails userDetails = _setUserDetails() ;
+    // _createUser(singletonUser);
+    // _createUserDetails();
+    _screenDatingProfile(singletonUser, userDetails);
   }
 
-  void _screenDatingProfile() {
-    // pop all screens
+  void _screenDatingProfile(singletonUser, userDetails) {
     Navigator.popUntil(context, (route) => route.isFirst);
-    Navigator.pushNamed(context, '/dating_profile');
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DatingProfileScreen(
+          user: singletonUser,
+          userDetails: userDetails
+        ),
+      ),
+    );
   }
+
 
   Future<void> _imagePicker(BuildContext context) async {
     final result = await Navigator.pushNamed(context, '/image_picker');
@@ -194,26 +205,16 @@ class _ScreenRegisterState extends State<ScreenRegister> {
     return singletonUser;
   }
 
-  Future _createUser(SingletonUser singletonUser) async {
-    Map<String, dynamic> user = {
-      'email': singletonUser.email,
-      'username': singletonUser.username,
-      'role': singletonUser.role,
-      'avatar': singletonUser.avatar,
-    };
-
-    await UserApi().postUser(user);
-  }
-
-  Future _createUserDetails() async {
+  UserDetails _setUserDetails()  {
     List<String> preferences = [];
     for (var element in _selectedPreferences) {
       preferences.add(element.name);
     }
-    await UserApi().postUserDetails(
-      _textFieldControllerName.text,
-      _textFieldControllerPhoneNumber.text,
-      preferences,
-    );
+
+    UserDetails userDetails = UserDetails(name:_textFieldControllerName.text,
+        phoneNum: _textFieldControllerPhoneNumber.text,preferences: preferences);
+
+    return userDetails;
   }
+
 }

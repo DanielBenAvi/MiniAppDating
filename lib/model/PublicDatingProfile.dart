@@ -5,18 +5,15 @@ class PublicDatingProfile {
   Gender? gender;
   int? age;
   String? bio;
-  List<Gender> sexOrientation;
   List<String> pictures;
 
   PublicDatingProfile({
-    this.nickName,
-    this.gender,
-    this.age,
-    this.bio,
-    List<Gender>? sexOrientation,
+    required this.nickName,
+    required this.gender,
+    required this.age,
+    required this.bio,
     List<String>? pictures,
-  })  : sexOrientation = sexOrientation ?? [],
-        pictures = pictures ?? [];
+  }) : pictures = pictures ?? [];
 
   @override
   String toString() {
@@ -25,8 +22,17 @@ class PublicDatingProfile {
         'gender=$gender, '
         'age=$age, '
         'bio=$bio, '
-        'sexOrientation=$sexOrientation, '
         'pictures=$pictures'
         '}';
+  }
+
+  Map<String, dynamic> publicDatingProfileToMap() {
+    return {
+      'nickName': nickName,
+      'gender': gender.toString(),
+      'age': age,
+      'bio': bio,
+      'pictures': pictures,
+    };
   }
 }

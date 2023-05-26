@@ -1,4 +1,5 @@
 import '../constants/Gender.dart';
+import 'PublicDatingProfile.dart';
 
 class PrivateDatingProfile {
   PublicDatingProfile? publicProfile;
@@ -12,18 +13,90 @@ class PrivateDatingProfile {
   List<String> likes;
 
   PrivateDatingProfile({
-    this.publicProfile,
-    this.dateOfBirthday,
-    this.phoneNumber,
+    required this.publicProfile,
+    required this.dateOfBirthday,
+    required this.phoneNumber,
     required this.distanceRange,
     required this.maxAge,
     required this.minAge,
-    List<Gender>? genderPreferences,
+    required List<Gender>? genderPreferences,
     List<String>? matches,
     List<String>? likes,
   })  : genderPreferences = genderPreferences ?? [],
         matches = matches ?? [],
         likes = likes ?? [];
+
+  PublicDatingProfile? getPublicProfile() {
+    return publicProfile;
+  }
+
+  void setPublicProfile(PublicDatingProfile? publicProfile) {
+    this.publicProfile = publicProfile;
+  }
+
+  DateTime? getDateOfBirthday() {
+    return dateOfBirthday;
+  }
+
+  void setDateOfBirthday(DateTime? dateOfBirthday) {
+    this.dateOfBirthday = dateOfBirthday;
+  }
+
+  String? getPhoneNumber() {
+    return phoneNumber;
+  }
+
+  void setPhoneNumber(String? phoneNumber) {
+    this.phoneNumber = phoneNumber;
+  }
+
+  int getDistanceRange() {
+    return distanceRange;
+  }
+
+  void setDistanceRange(int distanceRange) {
+    this.distanceRange = distanceRange;
+  }
+
+  int getMaxAge() {
+    return maxAge;
+  }
+
+  void setMaxAge(int maxAge) {
+    this.maxAge = maxAge;
+  }
+
+  int getMinAge() {
+    return minAge;
+  }
+
+  void setMinAge(int minAge) {
+    this.minAge = minAge;
+  }
+
+  List<Gender> getGenderPreferences() {
+    return genderPreferences;
+  }
+
+  void setGenderPreferences(List<Gender> genderPreferences) {
+    this.genderPreferences = genderPreferences;
+  }
+
+  List<String> getMatches() {
+    return matches;
+  }
+
+  void setMatches(List<String> matches) {
+    this.matches = matches;
+  }
+
+  List<String> getLikes() {
+    return likes;
+  }
+
+  void setLikes(List<String> likes) {
+    this.likes = likes;
+  }
 
   @override
   String toString() {
@@ -39,10 +112,20 @@ class PrivateDatingProfile {
         'likes=$likes'
         '}';
   }
+
+  Map<String, dynamic> privateDatingProfileToMap() {
+    final objectDetails = <String, dynamic>{
+      'publicProfile': publicProfile?.publicDatingProfileToMap(),
+      'dateOfBirthday': dateOfBirthday?.toIso8601String(),
+      'phoneNumber': phoneNumber,
+      'distanceRange': distanceRange,
+      'maxAge': maxAge,
+      'minAge': minAge,
+      'genderPreferences': genderPreferences.map((gender) => gender.toString()).toList(),
+      'matches': matches,
+      'likes': likes,
+    };
+
+    return objectDetails;
+  }
 }
-
-class PublicDatingProfile {
-  // Add properties of the PublicDatingProfile.dart class here
-}
-
-
