@@ -21,11 +21,11 @@ class NewUserBoundary {
 
   // toJson
   Map<String, dynamic> toJson() => {
-        'email': email,
-        'role': role,
-        'username': username,
-        'avatar': avatar,
-      };
+    'email': email,
+    'role': role,
+    'username': username,
+    'avatar': avatar,
+  };
 }
 
 class UserBoundary {
@@ -50,11 +50,11 @@ class UserBoundary {
 
   // toJson
   Map<String, dynamic> toJson() => {
-        'userId': userId.toJson(),
-        'role': role,
-        'username': username,
-        'avatar': avatar,
-      };
+    'userId': userId.toJson(),
+    'role': role,
+    'username': username,
+    'avatar': avatar,
+  };
 }
 
 class UserId {
@@ -70,7 +70,7 @@ class UserId {
 
   // toJson
   Map<String, dynamic> toJson() => {
-        'superapp': superapp,
-        'email': email,
-      };
+    'superapp': superapp,
+    'email': email,
+  };
 }

@@ -10,5 +10,5 @@ class ColorTheme {
   ColorTheme._internal();
 
   // add colors theme
-  Color? primaryColor = Colors.blue[900];
+  Color? primaryColor = Colors.pink;
 }

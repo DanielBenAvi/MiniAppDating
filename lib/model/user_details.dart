@@ -1,45 +1,31 @@
-class UserDetails {
-  // constructor
+import 'package:social_hive_client/model/boundaries/object_boundary.dart';
+
+import 'boundaries/user_boundary.dart';
+
+class SingletonUser {
   String? email;
-  String? name;
-  String? phoneNumber;
-  Map<String, dynamic>? interests;
-  String? gender;
-  Map<String, dynamic>? genderPreferences;
+  String? username;
+  String? role;
+  String? avatar;
 
-  static UserDetails? _instance;
+  static SingletonUser? _instance;
 
-  UserDetails._internal();
+  SingletonUser._internal();
 
-  static UserDetails get instance {
-    _instance ??= UserDetails._internal();
+  static SingletonUser get instance {
+    _instance ??= SingletonUser._internal();
     return _instance!;
   }
 
-  // toString
   @override
   String toString() {
-    return 'email: $email\nname: $name\nphone: $phoneNumber\n interests: $interests\ngender: $gender\ngenderPreferences: $genderPreferences';
+    return 'SingletonUser{email: $email, username: $username, role: $role, avatar: $avatar}';
   }
 
-  // fromJson
-  UserDetails.fromJson(Map<String, dynamic> json)
-      : email = json['email'],
-        name = json['name'],
-        phoneNumber = json['phoneNumber'],
-        interests = json['interests'],
-        gender = json['gender'],
-        genderPreferences = json['genderPreferences'];
-
-  // toJson
-  Map<String, dynamic> toJson() => {
-        'email': email,
-        'name': name,
-        'phoneNumber': phoneNumber,
-        'interests': interests,
-        'gender': gender,
-        'genderPreferences': genderPreferences
-      };
-
-
+  CreatedBy get createdBy => CreatedBy(
+    userId: UserId(
+      email: email.toString(),
+      superapp: '2023b.LiorAriely',
+    ),
+  );
 }

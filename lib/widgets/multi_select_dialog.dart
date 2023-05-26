@@ -25,26 +25,26 @@ class MultiSelect extends StatelessWidget {
       searchable: true,
       items: items,
       title: Text(title),
-      selectedColor: Colors.blue,
+      selectedColor: Colors.pink,
       listType: MultiSelectListType.LIST,
       selectedItemsTextStyle: const TextStyle(
-        color: Colors.blue,
+        color: Colors.pink,
       ),
       decoration: BoxDecoration(
-        color: Colors.blue.withOpacity(0.1),
+        color: Colors.pink.withOpacity(0.1),
         border: Border.all(
-          color: Colors.blue,
+          color: Colors.pink,
           width: 2,
         ),
       ),
       buttonIcon: const Icon(
         Icons.arrow_drop_down,
-        color: Colors.blue,
+        color: Colors.pink,
       ),
       buttonText: Text(
         buttonText,
         style: const TextStyle(
-          color: Colors.blue,
+          color: Colors.pink,
           fontSize: 16,
         ),
       ),

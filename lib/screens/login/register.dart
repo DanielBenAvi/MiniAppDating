@@ -45,7 +45,7 @@ class _RegisterState extends State<Register> {
                     width: 200,
                     height: 200,
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.blue, width: 2),
+                      border: Border.all(color: Colors.pink, width: 2),
                       shape: BoxShape.circle,
                       image: DecorationImage(
                           image: NetworkImage(

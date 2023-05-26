@@ -4,61 +4,85 @@ import 'package:social_hive_client/model/boundaries/user_boundary.dart';
 import 'package:social_hive_client/model/singleton_user.dart';
 import 'package:social_hive_client/rest_api/user_api.dart';
 
-class Login extends StatefulWidget {
-  const Login({Key? key}) : super(key: key);
+class ScreenLogin extends StatefulWidget {
+  const ScreenLogin({Key? key}) : super(key: key);
 
   @override
-  State<Login> createState() => _LoginState();
+  State<ScreenLogin> createState() => _ScreenLoginState();
 }
 
-class _LoginState extends State<Login> {
+class _ScreenLoginState extends State<ScreenLogin> {
   final _textFieldEmailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Login'),
+    return MaterialApp(
+      theme: ThemeData(
+        primarySwatch: Colors.pink,
+        inputDecorationTheme: InputDecorationTheme(
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.pink),
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+        ),
       ),
-      body: Container(
-        padding: const EdgeInsets.all(20),
-        alignment: Alignment.center,
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              TextFormField(
-                controller: _textFieldEmailController,
-                decoration: const InputDecoration(
-                  hintText: 'Email',
+      home: Scaffold(
+        body: Container(
+          padding: const EdgeInsets.all(20),
+          alignment: Alignment.center,
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const SizedBox(height: 40),
+                Text(
+                  "Dating",
+                  style: TextStyle(
+                    color: Colors.pink,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                validator: ValidationBuilder().email().maxLength(50).build(),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
+                const SizedBox(height: 40),
+                TextFormField(
+                  controller: _textFieldEmailController,
+                  decoration: InputDecoration(
+                    hintText: 'Email',
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  style: TextStyle(color: Colors.black),
+                  validator: ValidationBuilder().email().maxLength(50).build(),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        },
-                      );
                       _login();
                     }
                   },
-                  child: const Text('Login')),
-              const SizedBox(height: 20),
-              TextButton(
-                onPressed: _screenRegister,
-                child: const Text('Register'),
-              ),
-            ],
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.pink,
+                    onPrimary: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text('Login'),
+                ),
+                const SizedBox(height: 20),
+                TextButton(
+                  onPressed: _screenRegister,
+                  style: TextButton.styleFrom(primary: Colors.pink),
+                  child: const Text('Register'),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -67,17 +91,15 @@ class _LoginState extends State<Login> {
 
   Future<void> _login() async {
     UserBoundary userBoundary =
-        await UserApi().fetchUser(_textFieldEmailController.text);
+    await UserApi().getUser(_textFieldEmailController.text);
 
-    SingletonUser singletoneUser = SingletonUser.instance;
-    singletoneUser.email = userBoundary.userId.email;
-    singletoneUser.username = userBoundary.username;
-    singletoneUser.avatar = userBoundary.avatar;
-    singletoneUser.role = userBoundary.role;
+    SingletonUser singletonUser = SingletonUser.instance;
+    singletonUser.email = userBoundary.userId.email;
+    singletonUser.username = userBoundary.username;
+    singletonUser.avatar = userBoundary.avatar;
+    singletonUser.role = userBoundary.role;
 
-    debugPrint(singletoneUser.toString());
-
-    _screenHome(singletoneUser);
+    _screenHome();
   }
 
   void _screenRegister() {
@@ -85,8 +107,8 @@ class _LoginState extends State<Login> {
     Navigator.pushNamed(context, '/register');
   }
 
-  void _screenHome(singletoneUser) {
+  void _screenHome() {
     Navigator.pop(context);
-    Navigator.pushNamed(context, '/home_dating', arguments: singletoneUser);
+    Navigator.pushNamed(context, '/home');
   }
 }
