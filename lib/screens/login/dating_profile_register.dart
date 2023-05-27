@@ -27,6 +27,8 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
 
   final TextEditingController _bioController = TextEditingController();
   Gender? _selectedGender;
+  final TextEditingController _latitudeController = TextEditingController();
+  final TextEditingController _longitudeController = TextEditingController();
   final List<Gender> _selectedSexualPreference = [];
   DateTime? _selectedDateOfBirth;
   File? _selectedImage;
@@ -230,11 +232,44 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
                     });
                   },
                 ),
+                TextFormField(
+                  controller: _latitudeController,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(labelText: 'Latitude'),
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return 'Please enter latitude';
+                    }
+                    final double? latitude = double.tryParse(value);
+                    if (latitude == null || latitude < -180 || latitude > 180) {
+                      return 'Please enter a valid latitude between -180 and 180';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16.0),
+                TextFormField(
+                  controller: _longitudeController,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(labelText: 'Longitude'),
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return 'Please enter longitude';
+                    }
+                    final double? longitude = double.tryParse(value);
+                    if (longitude == null || longitude < -180 || longitude > 180) {
+                      return 'Please enter a valid longitude between -180 and 180';
+                    }
+                    return null;
+                  },
+                ),
                 const SizedBox(height: 16.0),
                 ElevatedButton(
                   onPressed: _registerDatingProfile,
                   child: const Text('Register'),
                 ),
+
+
               ],
             ),
           ),
@@ -252,7 +287,8 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
           distanceRange: _distanceRangeValues.end.toInt(), publicProfile: publicDP,
           maxAge: _ageRangeValues.end.toInt(), minAge: _ageRangeValues.start.toInt(), phoneNumber: widget.userDetails.phoneNum,
           genderPreferences: _selectedSexualPreference);
-      _createUser(widget.user);
+
+      print(_createUser(widget.user));
       //todo: fix this so it will get object boundary and not list
       print(_createUserDetails());
       print(privateDP.toString());
@@ -261,6 +297,8 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
   }
 
   Future _createUser(SingletonUser singletonUser) async {
+    print(singletonUser.toString());
+
     Map<String, dynamic> user = {
       'email': singletonUser.email,
       'username': singletonUser.username,
@@ -272,10 +310,13 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
   }
 
   Future _createUserDetails() async {
+
     ObjectBoundary? object = await UserApi().postUserDetails(
-      widget.userDetails.name as String,
-      widget.userDetails.phoneNum as String,
-      widget.userDetails.preferences, 10.2, 10.2
+        widget.userDetails.name as String,
+        widget.userDetails.phoneNum as String,
+        widget.userDetails.preferences,
+        double.parse(_latitudeController.text)
+        , double.parse(_longitudeController.text)
     );
 
     return object;
