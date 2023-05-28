@@ -87,7 +87,37 @@ class ObjectApi extends BaseApi {
 
     return objectBoundary;
   }
+  Future<ObjectBoundary?> postPrivateDatingProfile(
+      Map<String, dynamic> privateDatingProfileMap, double lat, double lng) async {
+    Map<String, dynamic> userDetails = {
+      "objectId": {},
+      "type": "PRIVATE_DATING_PROFILE",
+      "alias": "privateDatingProfile",
+      "active": true,
+      "location": {"lat": lat, "lng": lng},
+      "createdBy": {
+        "userId": {"superapp": superApp, "email": user.email}
+      },
+      "objectDetails": privateDatingProfileMap,
+    };
 
+    http.Response response = await http.post(
+      Uri.parse('http://$host:$portNumber/superapp/objects'
+          '?userSuperapp=$superApp&userEmail=${user.email}'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(userDetails),
+    );
+
+    if (response.statusCode != 200) {
+      debugPrint('LOG --- Failed to create user details');
+      return null;
+    }
+
+    Map<String, dynamic> responseBody = jsonDecode(response.body);
+    return ObjectBoundary.fromJson(responseBody);
+  }
 
 
 
