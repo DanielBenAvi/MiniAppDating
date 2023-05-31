@@ -4,8 +4,16 @@ import 'package:social_hive_client/model/boundaries/user_boundary.dart';
 import 'package:social_hive_client/model/singleton_user.dart';
 import 'package:social_hive_client/rest_api/user_api.dart';
 
+import '../model/boundaries/object_boundary.dart';
+
 class HomeDatingScreen extends StatefulWidget {
-  const HomeDatingScreen({Key? key}) : super(key: key);
+  final ObjectBoundary? userDetails;
+  final ObjectBoundary? privateDatingProfile;
+
+  const HomeDatingScreen({
+    Key? key,
+    this.userDetails, this.privateDatingProfile,
+  }) : super(key: key);
 
   @override
   _HomeDatingScreenState createState() => _HomeDatingScreenState();
@@ -165,6 +173,7 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
 
     );
   }
+
   void _loginScreen(BuildContext context) {
     Navigator.pop(context);
     Navigator.pushNamed(context, '/login');

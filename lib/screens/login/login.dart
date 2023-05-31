@@ -117,7 +117,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
       _datingProfileScreenState(userDetails);
     }
     else if(privateDatingProfile.length == 1){
-      _screenHomeDatingScreenState();
+      _screenHomeDatingScreenState(userDetails,privateDatingProfile[0]);
     }
 
 
@@ -133,7 +133,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
     Navigator.pushNamed(context, '/screen_user_details_register');
   }
 
-  void _screenHomeDatingScreenState() {
+  void _screenHomeDatingScreenState(ObjectBoundary? userDetails, ObjectBoundary? privateDatingProfile) {
     Navigator.pop(context);
     Navigator.pushNamed(context, '/home_dating');
   }
