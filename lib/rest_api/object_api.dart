@@ -3,14 +3,13 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/retry.dart';
-import 'package:social_hive_client/model/PublicDatingProfile.dart';
+
 import 'package:social_hive_client/model/boundaries/object_boundary.dart';
 import 'package:social_hive_client/model/boundaries/user_boundary.dart';
 import 'package:social_hive_client/model/singleton_user.dart';
 import 'package:social_hive_client/rest_api/base_api.dart';
 import 'package:social_hive_client/rest_api/user_api.dart';
 
-import '../constants/Gender.dart';
 import '../model/PrivateDatingProfile.dart';
 
 class ObjectApi extends BaseApi {
@@ -89,7 +88,7 @@ class ObjectApi extends BaseApi {
   }
   Future<ObjectBoundary?> postPrivateDatingProfile(
       Map<String, dynamic> privateDatingProfileMap, double lat, double lng) async {
-    Map<String, dynamic> userDetails = {
+    Map<String, dynamic> privateDatingProfile = {
       "objectId": {},
       "type": "PRIVATE_DATING_PROFILE",
       "alias": "privateDatingProfile",
@@ -100,18 +99,17 @@ class ObjectApi extends BaseApi {
       },
       "objectDetails": privateDatingProfileMap,
     };
-
     http.Response response = await http.post(
       Uri.parse('http://$host:$portNumber/superapp/objects'
           '?userSuperapp=$superApp&userEmail=${user.email}'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
-      body: jsonEncode(userDetails),
+      body: jsonEncode(privateDatingProfile),
     );
 
     if (response.statusCode != 200) {
-      debugPrint('LOG --- Failed to create user details');
+      debugPrint('LOG --- Failed to create privateDatingProfile');
       return null;
     }
 

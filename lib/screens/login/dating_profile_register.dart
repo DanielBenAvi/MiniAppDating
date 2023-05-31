@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:form_validator/form_validator.dart';
 import 'package:social_hive_client/model/PrivateDatingProfile.dart';
 import 'package:social_hive_client/model/UserDetails.dart';
 import 'package:social_hive_client/model/singleton_user.dart';
@@ -6,7 +7,9 @@ import 'dart:io';
 import '../../constants/Gender.dart';
 import '../../model/PublicDatingProfile.dart';
 import '../../model/boundaries/object_boundary.dart';
+import '../../model/boundaries/user_boundary.dart';
 import '../../rest_api/user_api.dart';
+import '../../rest_api/object_api.dart';
 
 class DatingProfileScreen extends StatefulWidget {
   final SingletonUser user;
@@ -25,6 +28,8 @@ class DatingProfileScreen extends StatefulWidget {
 
 class _DatingProfileScreenState extends State<DatingProfileScreen> {
 
+  final _textFieldControllerName = TextEditingController();
+  final _textFieldControllerPhoneNumber = TextEditingController();
   final TextEditingController _bioController = TextEditingController();
   Gender? _selectedGender;
   final TextEditingController _latitudeController = TextEditingController();
@@ -83,6 +88,36 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
             key: _formKey,
             child: ListView(
               children: [
+                const SizedBox(height: 20),
+                TextFormField(
+                  controller: _textFieldControllerName,
+                  decoration: InputDecoration(
+                    hintText: 'Name',
+                    filled: true,
+                    fillColor: Colors.white,
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Colors.pink),
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                  style: const TextStyle(color: Colors.black),
+                  validator: ValidationBuilder().minLength(3).maxLength(20).build(),
+                ),
+                const SizedBox(height: 20),
+                TextFormField(
+                  controller: _textFieldControllerPhoneNumber,
+                  decoration: InputDecoration(
+                    hintText: 'Phone Number',
+                    filled: true,
+                    fillColor: Colors.white,
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Colors.pink),
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                  style: const TextStyle(color: Colors.black),
+                  validator: ValidationBuilder().phone().maxLength(50).build(),
+                ),
                 TextFormField(
                   controller: _bioController,
                   decoration: const InputDecoration(labelText: 'Bio'),
@@ -278,27 +313,73 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
     );
   }
 
-  void _registerDatingProfile() {
+  Future<void> _registerDatingProfile() async {
     if (_formKey.currentState!.validate()) {
-      PublicDatingProfile publicDP = PublicDatingProfile(nickName: widget.userDetails.name, gender: _selectedGender,
-          age: calculateAge(_selectedDateOfBirth!), bio: _bioController.text);
+      PublicDatingProfile publicDP = PublicDatingProfile(
+        nickName: widget.userDetails.name,
+        gender: _selectedGender,
+        age: calculateAge(_selectedDateOfBirth!),
+        bio: _bioController.text,
+      );
 
-      PrivateDatingProfile privateDP = PrivateDatingProfile(dateOfBirthday:_selectedDateOfBirth,
-          distanceRange: _distanceRangeValues.end.toInt(), publicProfile: publicDP,
-          maxAge: _ageRangeValues.end.toInt(), minAge: _ageRangeValues.start.toInt(), phoneNumber: widget.userDetails.phoneNum,
-          genderPreferences: _selectedSexualPreference);
+      PrivateDatingProfile privateDP = PrivateDatingProfile(
+        dateOfBirthday: _selectedDateOfBirth,
+        distanceRange: _distanceRangeValues.end.toInt(),
+        publicProfile: publicDP,
+        maxAge: _ageRangeValues.end.toInt(),
+        minAge: _ageRangeValues.start.toInt(),
+        phoneNumber: widget.userDetails.phoneNum,
+        genderPreferences: _selectedSexualPreference,
+      );
 
-      print(_createUser(widget.user));
-      //todo: fix this so it will get object boundary and not list
-      print(_createUserDetails());
-      print(privateDP.toString());
+      try {
+        UserBoundary? userBoundary = await _createUser(widget.user);
+        if (userBoundary == null) {
+          throw Exception("Failed to create user");
+        }
+        Object? userDetails = await _createUserDetails();
+        if (userDetails == null) {
+          throw Exception("Failed to create user");
+        }
 
+        Object? privateDatingProfile = await _createPrivateDatingProfile(privateDP);
+        if (privateDatingProfile == null) {
+          throw Exception("Failed to create dating profile");
+        }
+
+        _screenHomeDatingScreenState();
+      } catch (error) {
+        // Show error message and navigate to a specific screen
+        showDialog(
+          barrierLabel: "error failed to create",
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text("Error"),
+              content: const Text("Failed to create"),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text("OK"),
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close the dialog
+                    Navigator.pushNamed(context, '/login'); // Navigate to the specific screen
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      }
     }
   }
 
-  Future _createUser(SingletonUser singletonUser) async {
-    print(singletonUser.toString());
 
+  void _setUserDetails()  {
+    widget.userDetails.name = _textFieldControllerName.text;
+    widget.userDetails.phoneNum = _textFieldControllerPhoneNumber.text;
+  }
+
+  Future _createUser(SingletonUser singletonUser) async {
     Map<String, dynamic> user = {
       'email': singletonUser.email,
       'username': singletonUser.username,
@@ -310,6 +391,8 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
   }
 
   Future _createUserDetails() async {
+    _setUserDetails();
+    widget.userDetails.toString();
 
     ObjectBoundary? object = await UserApi().postUserDetails(
         widget.userDetails.name as String,
@@ -321,4 +404,20 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
 
     return object;
   }
+
+  Future _createPrivateDatingProfile(PrivateDatingProfile privateDP) async {
+    Map<String, dynamic> mapPrivateDatingProfile = privateDP.privateDatingProfileToMap();
+    ObjectBoundary? object = await ObjectApi().
+    postPrivateDatingProfile(mapPrivateDatingProfile,double.parse(_latitudeController.text), double.parse(_longitudeController.text));
+
+    return object;
+  }
+
+  void _screenHomeDatingScreenState() {
+    Navigator.pop(context);
+    Navigator.pushNamed(context, '/home_dating');
+  }
+
 }
+
+

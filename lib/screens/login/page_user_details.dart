@@ -20,8 +20,6 @@ class ScreenRegister extends StatefulWidget {
 class _ScreenRegisterState extends State<ScreenRegister> {
   final _textFieldControllerEmail = TextEditingController();
   final _textFieldControllerUsername = TextEditingController();
-  final _textFieldControllerName = TextEditingController();
-  final _textFieldControllerPhoneNumber = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   late String _avatarPath =
       'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSw4dcOs0ebrWK3g4phCh7cfF-aOM3rhxnsCQ&usqp=CAU';
@@ -102,36 +100,6 @@ class _ScreenRegisterState extends State<ScreenRegister> {
                     child: const Text('Choose Avatar'),
                   ),
                   const SizedBox(height: 20),
-                  TextFormField(
-                    controller: _textFieldControllerName,
-                    decoration: InputDecoration(
-                      hintText: 'Name',
-                      filled: true,
-                      fillColor: Colors.white,
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Colors.pink),
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                    ),
-                    style: const TextStyle(color: Colors.black),
-                    validator: ValidationBuilder().minLength(3).maxLength(20).build(),
-                  ),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: _textFieldControllerPhoneNumber,
-                    decoration: InputDecoration(
-                      hintText: 'Phone Number',
-                      filled: true,
-                      fillColor: Colors.white,
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Colors.pink),
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                    ),
-                    style: const TextStyle(color: Colors.black),
-                    validator: ValidationBuilder().phone().maxLength(50).build(),
-                  ),
-                  const SizedBox(height: 20),
                   MultiSelect(
                     "Preferences",
                     "Preferences",
@@ -167,7 +135,7 @@ class _ScreenRegisterState extends State<ScreenRegister> {
 
   void _continue() {
     SingletonUser singletonUser = _setSingletonUser();
-    UserDetails userDetails = _setUserDetails() ;
+    UserDetails userDetails = _setUserDetailsUser() ;
     // _createUser(singletonUser);
     // _createUserDetails();
     _screenDatingProfile(singletonUser, userDetails);
@@ -205,14 +173,13 @@ class _ScreenRegisterState extends State<ScreenRegister> {
     return singletonUser;
   }
 
-  UserDetails _setUserDetails()  {
+  UserDetails _setUserDetailsUser()  {
     List<String> preferences = [];
     for (var element in _selectedPreferences) {
       preferences.add(element.name);
     }
 
-    UserDetails userDetails = UserDetails(name:_textFieldControllerName.text,
-        phoneNum: _textFieldControllerPhoneNumber.text,preferences: preferences);
+    UserDetails userDetails = UserDetails(preferences: preferences);
 
     return userDetails;
   }

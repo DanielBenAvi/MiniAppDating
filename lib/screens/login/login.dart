@@ -99,7 +99,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
     singletonUser.avatar = userBoundary.avatar;
     singletonUser.role = userBoundary.role;
 
-    _screenHome();
+    _screenHomeDatingScreenState();
   }
 
   void _screenRegister() {
@@ -107,8 +107,8 @@ class _ScreenLoginState extends State<ScreenLogin> {
     Navigator.pushNamed(context, '/register');
   }
 
-  void _screenHome() {
+  void _screenHomeDatingScreenState() {
     Navigator.pop(context);
-    Navigator.pushNamed(context, '/home');
+    Navigator.pushNamed(context, '/home_dating');
   }
 }

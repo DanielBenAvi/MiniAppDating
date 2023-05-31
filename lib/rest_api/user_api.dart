@@ -20,9 +20,12 @@ class UserApi extends BaseApi {
       },
       body: jsonEncode(newUserBoundary),
     );
-
-    if (response.statusCode != 200) {
-      debugPrint('LOG --- Failed to load events');
+    if (response.statusCode == 409) {
+      debugPrint('LOG --- Failed to create user, user already exists');
+      return null;
+    }
+    else if (response.statusCode != 200) {
+      debugPrint('LOG --- Failed to create user');
       return null;
     }
 
@@ -57,7 +60,15 @@ class UserApi extends BaseApi {
       body: jsonEncode(userDetails),
     );
 
-    if (response.statusCode != 200) {
+    if (response.statusCode == 401) {
+      debugPrint('LOG --- Failed to create user details, no permission');
+      return null;
+    }
+    if (response.statusCode == 404) {
+      debugPrint('LOG --- Failed to create user details, not found');
+      return null;
+    }
+    else if (response.statusCode != 200) {
       debugPrint('LOG --- Failed to create user details');
       return null;
     }
