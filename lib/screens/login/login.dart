@@ -6,6 +6,7 @@ import 'package:social_hive_client/model/singleton_user.dart';
 import 'package:social_hive_client/rest_api/command_api.dart';
 import 'package:social_hive_client/rest_api/object_api.dart';
 import 'package:social_hive_client/rest_api/user_api.dart';
+import 'package:social_hive_client/screens/login/screen_dating_profile_register.dart';
 
 class ScreenLogin extends StatefulWidget {
   const ScreenLogin({Key? key}) : super(key: key);
@@ -25,7 +26,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
         primarySwatch: Colors.pink,
         inputDecorationTheme: InputDecorationTheme(
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.pink),
+            borderSide: const BorderSide(color: Colors.pink),
             borderRadius: BorderRadius.circular(8.0),
           ),
         ),
@@ -59,7 +60,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  style: TextStyle(color: Colors.black),
+                  style: const TextStyle(color: Colors.black),
                   validator: ValidationBuilder().email().maxLength(50).build(),
                 ),
                 const SizedBox(height: 20),
@@ -70,8 +71,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    primary: Colors.pink,
-                    onPrimary: Colors.white,
+                    foregroundColor: Colors.white, backgroundColor: Colors.pink,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -81,7 +81,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
                 const SizedBox(height: 20),
                 TextButton(
                   onPressed: _screenRegister,
-                  style: TextButton.styleFrom(primary: Colors.pink),
+                  style: TextButton.styleFrom(foregroundColor: Colors.pink),
                   child: const Text('Register'),
                 ),
               ],
@@ -102,20 +102,21 @@ class _ScreenLoginState extends State<ScreenLogin> {
     singletonUser.avatar = userBoundary.avatar;
     singletonUser.role = userBoundary.role;
 
-    ObjectBoundary? object = await CommandApi().getMyUserDetailsByEmail();
+    ObjectBoundary? userDetails = await CommandApi().getMyUserDetailsByEmail();
 
-    if(object == null){
-      debugPrint("error no userDetails");
-      return;
+    if(userDetails == null){
+      _showErrorDialog(context, 'login Failed. missing user details.');
+      _screenRegisterUserDetails();
     }
-    List<ObjectBoundary>? objects = await ObjectApi().getChildren(object.objectId.internalObjectId);
-    if(objects == null){
-      debugPrint("error getting child");
+    List<ObjectBoundary>? privateDatingProfile = await ObjectApi().getChildren(userDetails?.objectId as String);
+    if(privateDatingProfile == null){
+      _showErrorDialog(context, 'login Failed. Please try again.');
     }
-    else if(objects.isEmpty){
-
+    else if(privateDatingProfile.isEmpty){
+      _showErrorDialog(context, 'login Failed. missing dating profile.');
+      _datingProfileScreenState(userDetails);
     }
-    else if(objects.length == 1){
+    else if(privateDatingProfile.length == 1){
       _screenHomeDatingScreenState();
     }
 
@@ -124,11 +125,45 @@ class _ScreenLoginState extends State<ScreenLogin> {
 
   void _screenRegister() {
     Navigator.pop(context);
-    Navigator.pushNamed(context, '/register');
+    Navigator.pushNamed(context, '/screen_user_register');
+  }
+
+  void _screenRegisterUserDetails() {
+    Navigator.pop(context);
+    Navigator.pushNamed(context, '/screen_user_details_register');
   }
 
   void _screenHomeDatingScreenState() {
     Navigator.pop(context);
     Navigator.pushNamed(context, '/home_dating');
+  }
+
+  void _datingProfileScreenState(ObjectBoundary? userDetails) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DatingProfileScreen(userDetails: userDetails),
+      ),
+    );
+  }
+
+  void _showErrorDialog(BuildContext context, String errorMessage) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('Error'),
+          content: Text(errorMessage),
+          actions: [
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(); // Close the dialog
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }

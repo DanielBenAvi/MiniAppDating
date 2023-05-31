@@ -3,12 +3,9 @@ import 'package:form_validator/form_validator.dart';
 import 'package:social_hive_client/constants/roles.dart';
 import 'package:social_hive_client/model/singleton_user.dart';
 import 'package:social_hive_client/rest_api/user_api.dart';
+import '../../model/boundaries/user_boundary.dart';
 
-import '../../constants/preferences.dart';
-import '../../model/item_object.dart';
-import '../../model/UserDetails.dart';
-import '../../widgets/multi_select_dialog.dart';
-import 'dating_profile_register.dart';
+
 
 class ScreenRegister extends StatefulWidget {
   const ScreenRegister({Key? key}) : super(key: key);
@@ -24,13 +21,17 @@ class _ScreenRegisterState extends State<ScreenRegister> {
   late String _avatarPath =
       'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSw4dcOs0ebrWK3g4phCh7cfF-aOM3rhxnsCQ&usqp=CAU';
 
-  List<ItemObject> _selectedPreferences = [];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Register'),
+        title: const Center( // Center the "Register" title
+          child: Text(
+            'Register',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
         backgroundColor: Colors.pink,
       ),
       body: SingleChildScrollView(
@@ -56,6 +57,19 @@ class _ScreenRegisterState extends State<ScreenRegister> {
                     ),
                   ),
                   const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () {
+                      _imagePicker(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white, backgroundColor: Colors.pink,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text('Choose Avatar'),
+                  ),
+                  const SizedBox(height: 20),
                   TextFormField(
                     controller: _textFieldControllerEmail,
                     decoration: InputDecoration(
@@ -78,7 +92,7 @@ class _ScreenRegisterState extends State<ScreenRegister> {
                       filled: true,
                       fillColor: Colors.white,
                       focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.pink),
+                        borderSide: const BorderSide(color: Colors.pink),
                         borderRadius: BorderRadius.circular(8.0),
                       ),
                     ),
@@ -88,36 +102,12 @@ class _ScreenRegisterState extends State<ScreenRegister> {
                   const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
-                      _imagePicker(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      primary: Colors.pink,
-                      onPrimary: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text('Choose Avatar'),
-                  ),
-                  const SizedBox(height: 20),
-                  MultiSelect(
-                    "Preferences",
-                    "Preferences",
-                    Preferences().getPreferences(),
-                    onMultiSelectConfirm: (List<ItemObject> results) {
-                      _selectedPreferences = results;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         _continue();
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      primary: Colors.pink,
-                      onPrimary: Colors.white,
+                      foregroundColor: Colors.white, backgroundColor: Colors.pink,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -133,26 +123,34 @@ class _ScreenRegisterState extends State<ScreenRegister> {
     );
   }
 
-  void _continue() {
+
+
+  void _continue() async {
     SingletonUser singletonUser = _setSingletonUser();
-    UserDetails userDetails = _setUserDetailsUser() ;
-    // _createUser(singletonUser);
-    // _createUserDetails();
-    _screenDatingProfile(singletonUser, userDetails);
+    UserBoundary? userBoundary = await _createUser(singletonUser);
+
+    if (userBoundary == null) {
+      _showErrorDialog(context, 'Registration Failed. Please try again.');
+      return;
+    }
+
+
+    _userDetailsScreenState();
   }
 
-  void _screenDatingProfile(singletonUser, userDetails) {
-    Navigator.popUntil(context, (route) => route.isFirst);
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => DatingProfileScreen(
-          user: singletonUser,
-          userDetails: userDetails
-        ),
-      ),
-    );
-  }
+
+  // void _screenDatingProfile(singletonUser, userDetails) {
+  //   Navigator.popUntil(context, (route) => route.isFirst);
+  //   Navigator.push(
+  //     context,
+  //     MaterialPageRoute(
+  //       builder: (context) => DatingProfileScreen(
+  //           user: singletonUser,
+  //           userDetails: userDetails
+  //       ),
+  //     ),
+  //   );
+  // }
 
 
   Future<void> _imagePicker(BuildContext context) async {
@@ -173,15 +171,42 @@ class _ScreenRegisterState extends State<ScreenRegister> {
     return singletonUser;
   }
 
-  UserDetails _setUserDetailsUser()  {
-    List<String> preferences = [];
-    for (var element in _selectedPreferences) {
-      preferences.add(element.name);
-    }
+  Future <UserBoundary?>_createUser(SingletonUser singletonUser) async {
+    Map<String, dynamic> user = {
+      'email': singletonUser.email,
+      'username': singletonUser.username,
+      'role': singletonUser.role,
+      'avatar': singletonUser.avatar,
+    };
 
-    UserDetails userDetails = UserDetails(preferences: preferences);
+    return await UserApi().postUser(user);
+  }
 
-    return userDetails;
+  void _showErrorDialog(BuildContext context, String errorMessage) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('Error'),
+          content: Text(errorMessage),
+          actions: [
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(); // Close the dialog
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _userDetailsScreenState() {
+    Navigator.pop(context);
+    Navigator.pushNamed(context, '/screen_user_details_register');
   }
 
 }
+
+
