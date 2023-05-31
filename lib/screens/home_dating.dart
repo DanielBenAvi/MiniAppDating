@@ -90,12 +90,12 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
                   SizedBox(height: 16.0),
                   Text(
                     singletonUser?.username ?? '',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 24.0,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 8.0),
+                  const SizedBox(height: 8.0),
                   Text(
                     singletonUser?.details ?? 'i like long walks on the beach',
                     style: TextStyle(
@@ -119,7 +119,7 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
                       padding: const EdgeInsets.all(50.0),
                       shape: const CircleBorder(
                         side: BorderSide(
-                          color: Colors.blue,
+                          color: Colors.pink,
                           width: 2.0,
                         ),
                       ),
@@ -150,7 +150,7 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
                       padding: const EdgeInsets.all(50.0),
                       shape: const CircleBorder(
                         side: BorderSide(
-                          color: Colors.blue,
+                          color: Colors.pink,
                           width: 2.0,
                         ),
                       ),

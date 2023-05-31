@@ -90,14 +90,13 @@ class UserApi extends BaseApi {
     }
   }
 
-  Future updateRole(String newRole) async {
+  Future<void> updateRole(String newRole) async {
     Map<String, dynamic> updateUserBoundary = {
       'role': newRole,
     };
 
-    final response = http.put(
-      Uri.parse(
-          'http://$host:$portNumber/superapp/users/2023b.LiorAriely/${user.email}'),
+    final response = await http.put(
+      Uri.parse('http://$host:$portNumber/superapp/users/2023b.LiorAriely/${user.email}'),
       headers: <String, String>{
         'Accept': 'application/json',
         'Content-Type': 'application/json'
@@ -107,4 +106,6 @@ class UserApi extends BaseApi {
 
     debugPrint('LOG --- response: ${response.toString()}');
   }
+
+
 }

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:form_validator/form_validator.dart';
+import 'package:social_hive_client/model/boundaries/object_boundary.dart';
 import 'package:social_hive_client/model/boundaries/user_boundary.dart';
 import 'package:social_hive_client/model/singleton_user.dart';
+import 'package:social_hive_client/rest_api/command_api.dart';
+import 'package:social_hive_client/rest_api/object_api.dart';
 import 'package:social_hive_client/rest_api/user_api.dart';
 
 class ScreenLogin extends StatefulWidget {
@@ -37,7 +40,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 const SizedBox(height: 40),
-                Text(
+                const Text(
                   "Dating",
                   style: TextStyle(
                     color: Colors.pink,
@@ -99,7 +102,24 @@ class _ScreenLoginState extends State<ScreenLogin> {
     singletonUser.avatar = userBoundary.avatar;
     singletonUser.role = userBoundary.role;
 
-    _screenHomeDatingScreenState();
+    ObjectBoundary? object = await CommandApi().getMyUserDetailsByEmail();
+
+    if(object == null){
+      debugPrint("error no userDetails");
+      return;
+    }
+    List<ObjectBoundary>? objects = await ObjectApi().getChildren(object.objectId.internalObjectId);
+    if(objects == null){
+      debugPrint("error getting child");
+    }
+    else if(objects.isEmpty){
+
+    }
+    else if(objects.length == 1){
+      _screenHomeDatingScreenState();
+    }
+
+
   }
 
   void _screenRegister() {

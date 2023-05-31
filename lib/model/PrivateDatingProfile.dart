@@ -8,6 +8,7 @@ class PrivateDatingProfile {
   int distanceRange;
   int maxAge;
   int minAge;
+  //String address;
   List<Gender> genderPreferences;
   List<String> matches;
   List<String> likes;

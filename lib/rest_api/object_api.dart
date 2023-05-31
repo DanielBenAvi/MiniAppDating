@@ -117,6 +117,72 @@ class ObjectApi extends BaseApi {
     return ObjectBoundary.fromJson(responseBody);
   }
 
+  Future<bool> addChild(String internalObjectId, ObjectId childObjectId) async {
+    final String? userEmail = UserApi().user.email;
+    final String userSuperapp = superApp;
+
+    Map<String, dynamic> requestBody = {
+      'superapp': childObjectId.superapp,
+      'internalObjectId': childObjectId.internalObjectId,
+    };
+
+    String requestBodyJson = jsonEncode(requestBody);
+    debugPrint(requestBodyJson);
+    debugPrint('$internalObjectId and $superApp');
+
+    String url = 'http://$host:$portNumber/superapp/objects/$superApp/$internalObjectId/children?userSuperapp=$userSuperapp&userEmail=$userEmail';
+    debugPrint('URL: $url');
+
+    http.Response response = await http.put(
+      Uri.parse(url),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8'
+      },
+      body: requestBodyJson,
+    );
+
+    if(response.statusCode != 200){
+      debugPrint("Error adding child. Status code: ${response.statusCode}");
+      return false;
+    }
+
+    return true;
+  }
+
+
+
+
+  Future<List<ObjectBoundary>?> getChildren(String internalObjectId) async {
+    int size = 1;
+    int page = 0;
+    final String? userEmail = UserApi().user.email;
+    final String userSuperapp = superApp;
+    String url = 'http://$host:$portNumber/superapp/objects/$superApp/$internalObjectId/'
+        'children?userSuperapp=$userSuperapp&userEmail=$userEmail&size=$size&page=$page';
+
+    http.Response response = await http.get(
+      Uri.parse(url),
+      headers: <String, String>{
+        'Accept': 'application/json',
+      },
+    );
+
+    if(response.statusCode == 200) {
+      List<dynamic> jsonList = jsonDecode(response.body);
+      List<ObjectBoundary> children = jsonList.map((json) => ObjectBoundary.fromJson(json)).toList();
+      return children;
+    } else {
+      debugPrint('Failed to get children. Status code: ${response.statusCode}');
+      return null;
+    }
+
+  }
+
+
+
+
+
+
 
 
 }

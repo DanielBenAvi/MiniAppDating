@@ -337,14 +337,21 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
         if (userBoundary == null) {
           throw Exception("Failed to create user");
         }
-        Object? userDetails = await _createUserDetails();
+        ObjectBoundary? userDetails = await _createUserDetails();
         if (userDetails == null) {
+          debugPrint("Failed to create user details");
           throw Exception("Failed to create user");
         }
 
-        Object? privateDatingProfile = await _createPrivateDatingProfile(privateDP);
+        ObjectBoundary? privateDatingProfile = await _createPrivateDatingProfile(privateDP);
         if (privateDatingProfile == null) {
+          debugPrint("Failed to create dating profile");
           throw Exception("Failed to create dating profile");
+        }
+        bool successfulChild = await ObjectApi().addChild(userDetails.objectId.internalObjectId, privateDatingProfile.objectId);
+        if(!successfulChild){
+          debugPrint("Failed to connect to child");
+          throw Exception("Failed to connect to child");
         }
 
         _screenHomeDatingScreenState();
@@ -379,7 +386,7 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
     widget.userDetails.phoneNum = _textFieldControllerPhoneNumber.text;
   }
 
-  Future _createUser(SingletonUser singletonUser) async {
+  Future <UserBoundary?>_createUser(SingletonUser singletonUser) async {
     Map<String, dynamic> user = {
       'email': singletonUser.email,
       'username': singletonUser.username,
@@ -387,7 +394,7 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
       'avatar': singletonUser.avatar,
     };
 
-    await UserApi().postUser(user);
+    return await UserApi().postUser(user);
   }
 
   Future _createUserDetails() async {
