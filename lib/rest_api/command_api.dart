@@ -9,7 +9,7 @@ import 'base_api.dart';
 
 class CommandApi extends BaseApi {
   /// get all events that the user is participating in
-  Future<ObjectBoundary?> getMyUserDetailsByEmail() async {
+  Future<ObjectBoundary?> getMyUserDetailsByEmail(String email) async {
     UserApi().updateRole('MINIAPP_USER');
     // Create command
     Map<String, dynamic> command = {
@@ -17,12 +17,12 @@ class CommandApi extends BaseApi {
       "command": "GET_USER_DETAILS_BY_EMAIL",
       "targetObject": {
         "objectId": {
-          "superapp": "2023b.LiorAriely",
+          "superapp": superApp,
           "internalObjectId": demoObjectInternalObjectId
         }
       },
       "invokedBy": {
-        "userId": {"superapp": "2023b.LiorAriely", "email": user.email}
+        "userId": {"superapp": "2023b.LiorAriely", "email": email}
       },
       "commandAttributes": {}
     };
@@ -35,11 +35,13 @@ class CommandApi extends BaseApi {
       },
       body: jsonEncode(command),
     );
+    UserApi().updateRole('SUPERAPP_USER');
 
     if (response.statusCode != 200) {
-      debugPrint('LOG --- Failed to load UserDetails');
+      debugPrint('LOG --- Failed to load UserDetails. Response Type: ${response.statusCode}');
       return null;
     }
+
 
     Map<String, dynamic> responseBody = jsonDecode(response.body);
     return ObjectBoundary.fromJson(responseBody);

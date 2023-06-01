@@ -1,10 +1,13 @@
+import 'dart:typed_data';
+
+import 'package:file_picker/file_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:social_hive_client/model/PrivateDatingProfile.dart';
 import 'dart:io';
 import '../../constants/Gender.dart';
 import '../../model/PublicDatingProfile.dart';
 import '../../model/boundaries/object_boundary.dart';
-import '../../model/boundaries/user_boundary.dart';
 import '../../rest_api/object_api.dart';
 
 class DatingProfileScreen extends StatefulWidget {
@@ -28,9 +31,11 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
   DateTime? _selectedDateOfBirth;
   File? _selectedImage;
   RangeValues _ageRangeValues = const RangeValues(18, 40);
-  RangeValues _distanceRangeValues = const RangeValues(0, 100);
   final _formKey = GlobalKey<FormState>();
 
+  PlatformFile? pickedFile;
+  UploadTask? uploadTask;
+  String? downloadURL;
 
   int calculateAge(DateTime dateOfBirth) {
     DateTime currentDate = DateTime.now();
@@ -43,9 +48,6 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
 
     return age;
   }
-
-
-
 
 
   @override
@@ -103,9 +105,20 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
                       lastDate: DateTime.now(),
                     ).then((selectedDate) {
                       if (selectedDate != null) {
-                        setState(() {
-                          _selectedDateOfBirth = selectedDate;
-                        });
+                        int age = calculateAge(selectedDate);
+                        if (age >= 18) {
+                          setState(() {
+                            _selectedDateOfBirth = selectedDate;
+                          });
+                        } else {
+                          // Show an error message or handle the case when the selected date is not valid.
+                          // For example, you can display a SnackBar with an error message:
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('You must be at least 18 years old.'),
+                            ),
+                          );
+                        }
                       }
                     });
                   },
@@ -122,6 +135,7 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 16.0),
                 Text(
                   'Age Range: ${_ageRangeValues.start.toInt()} - ${_ageRangeValues.end.toInt()}',
@@ -210,6 +224,9 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
                   }).toList(),
                 ),
                 const SizedBox(height: 16.0),
+                OutlinedButton(
+                    onPressed: _filePicker, child: const Text('Add Image')),
+                const SizedBox(height: 16.0),
                 ElevatedButton(
                   onPressed: _registerDatingProfile,
                   child: const Text('Register'),
@@ -247,8 +264,31 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
         _showErrorDialog(context, 'Registration Failed. Please try again.');
         return;
       }
+
+      String? internalObjectId = widget.userDetails?.objectId?.internalObjectId;
+      ObjectApi().addChild(internalObjectId!, privateDatingProfile.objectId) ;
+
       _screenHomeDatingScreenState();
     }
+  }
+  Future _filePicker() async {
+    final result = await FilePicker.platform.pickFiles();
+    if (result == null) return;
+
+    setState(() {
+      pickedFile = result.files.first;
+    });
+    Uint8List? uploadFile = result.files.single.bytes;
+    final path = 'files/${pickedFile!.name}';
+
+    final ref = FirebaseStorage.instance.ref().child(path);
+    uploadTask = ref.putData(uploadFile!);
+    final snapshot = await uploadTask!.whenComplete(() {});
+    final urlDownload = await snapshot.ref.getDownloadURL();
+    setState(() {
+      downloadURL = urlDownload;
+    });
+    debugPrint('Download-Link: $urlDownload');
   }
 
   void _showErrorDialog(BuildContext context, String errorMessage) {

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:form_validator/form_validator.dart';
 import 'package:social_hive_client/model/boundaries/object_boundary.dart';
@@ -21,78 +23,72 @@ class _ScreenLoginState extends State<ScreenLogin> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(
-        primarySwatch: Colors.pink,
-        inputDecorationTheme: InputDecorationTheme(
-          focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Colors.pink),
-            borderRadius: BorderRadius.circular(8.0),
-          ),
-        ),
-      ),
-      home: Scaffold(
-        body: Container(
-          padding: const EdgeInsets.all(20),
-          alignment: Alignment.center,
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                const SizedBox(height: 40),
-                const Text(
-                  "Dating",
-                  style: TextStyle(
-                    color: Colors.pink,
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 40),
-                TextFormField(
-                  controller: _textFieldEmailController,
-                  decoration: InputDecoration(
-                    hintText: 'Email',
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+    return Scaffold(
+      body: Builder(
+        builder: (BuildContext context) {
+          return Container(
+            padding: const EdgeInsets.all(20),
+            alignment: Alignment.center,
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 40),
+                  const Text(
+                    "Dating",
+                    style: TextStyle(
+                      color: Colors.pink,
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  style: const TextStyle(color: Colors.black),
-                  validator: ValidationBuilder().email().maxLength(50).build(),
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      _login();
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white, backgroundColor: Colors.pink,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                  const SizedBox(height: 40),
+                  TextFormField(
+                    controller: _textFieldEmailController,
+                    decoration: InputDecoration(
+                      hintText: 'Email',
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
+                    style: const TextStyle(color: Colors.black),
+                    validator: ValidationBuilder().email().maxLength(50).build(),
                   ),
-                  child: const Text('Login'),
-                ),
-                const SizedBox(height: 20),
-                TextButton(
-                  onPressed: _screenRegister,
-                  style: TextButton.styleFrom(foregroundColor: Colors.pink),
-                  child: const Text('Register'),
-                ),
-              ],
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        _login(context);
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.pink,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text('Login'),
+                  ),
+                  const SizedBox(height: 20),
+                  TextButton(
+                    onPressed: _screenRegister,
+                    style: TextButton.styleFrom(foregroundColor: Colors.pink),
+                    child: const Text('Register'),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
 
-  Future<void> _login() async {
+  Future<void> _login(BuildContext context) async {
     UserBoundary userBoundary =
     await UserApi().getUser(_textFieldEmailController.text);
 
@@ -102,25 +98,25 @@ class _ScreenLoginState extends State<ScreenLogin> {
     singletonUser.avatar = userBoundary.avatar;
     singletonUser.role = userBoundary.role;
 
-    ObjectBoundary? userDetails = await CommandApi().getMyUserDetailsByEmail();
+    ObjectBoundary? userDetails = await CommandApi().getMyUserDetailsByEmail(singletonUser.email!);
 
-    if(userDetails == null){
-      _showErrorDialog(context, 'login Failed. missing user details.');
+    if (userDetails == null) {
+      await showPopupMessage(context, "Error login, missing user details");
       _screenRegisterUserDetails();
+      return;
     }
-    List<ObjectBoundary>? privateDatingProfile = await ObjectApi().getChildren(userDetails?.objectId as String);
-    if(privateDatingProfile == null){
-      _showErrorDialog(context, 'login Failed. Please try again.');
-    }
-    else if(privateDatingProfile.isEmpty){
-      _showErrorDialog(context, 'login Failed. missing dating profile.');
+    List<ObjectBoundary>? privateDatingProfile =
+    await ObjectApi().getChildren(userDetails?.objectId.internalObjectId as String);
+    if (privateDatingProfile == null) {
+      await showPopupMessage(context, "Error login, missing dating profile");
+      return;
+    } else if (privateDatingProfile.isEmpty) {
+      await showPopupMessage(context, "Error login, missing dating profile");
       _datingProfileScreenState(userDetails);
+      return;
+    } else if (privateDatingProfile.length == 1) {
+      _screenHomeDatingScreenState(userDetails, privateDatingProfile[0]);
     }
-    else if(privateDatingProfile.length == 1){
-      _screenHomeDatingScreenState(userDetails,privateDatingProfile[0]);
-    }
-
-
   }
 
   void _screenRegister() {
@@ -133,7 +129,8 @@ class _ScreenLoginState extends State<ScreenLogin> {
     Navigator.pushNamed(context, '/screen_user_details_register');
   }
 
-  void _screenHomeDatingScreenState(ObjectBoundary? userDetails, ObjectBoundary? privateDatingProfile) {
+  void _screenHomeDatingScreenState(
+      ObjectBoundary? userDetails, ObjectBoundary? privateDatingProfile) {
     Navigator.pop(context);
     Navigator.pushNamed(context, '/home_dating');
   }
@@ -147,23 +144,23 @@ class _ScreenLoginState extends State<ScreenLogin> {
     );
   }
 
-  void _showErrorDialog(BuildContext context, String errorMessage) {
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: const Text('Error'),
-          content: Text(errorMessage),
-          actions: [
-            TextButton(
-              child: const Text('OK'),
-              onPressed: () {
-                Navigator.of(dialogContext).pop(); // Close the dialog
-              },
-            ),
-          ],
-        );
-      },
+  Future<void> showPopupMessage(BuildContext context, String message) async {
+    final snackBar = SnackBar(
+      content: Text(
+        message,
+        style: const TextStyle(
+          fontSize: 16.0,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+      ),
+      backgroundColor: Colors.redAccent,
+      duration: const Duration(seconds: 3),
     );
+
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+
+    await Future.delayed(const Duration(seconds: 3));
   }
+
 }

@@ -24,82 +24,80 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Center(
-          child: Text(
-            'Register extra user details',
-            style: TextStyle(color: Colors.white),
+    return MaterialApp(
+      theme: ThemeData(
+        primarySwatch: Colors.pink,
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.white,
+          focusedBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: Colors.white),
+            borderRadius: BorderRadius.circular(8.0),
           ),
+          enabledBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: Colors.white),
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          labelStyle: const TextStyle(color: Colors.pinkAccent),
         ),
-        backgroundColor: Colors.pink,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 20),
-              TextFormField(
-                controller: _textFieldControllerName,
-                decoration: InputDecoration(
-                  hintText: 'Name',
-                  filled: true,
-                  fillColor: Colors.white,
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.pink),
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                  hintStyle: const TextStyle(color: Colors.pink),
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Center(
+            child: Text(
+              'Register extra user details',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+          backgroundColor: Colors.pink,
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 20),
+                TextFormField(
+                  controller: _textFieldControllerName,
+                  decoration: const InputDecoration(labelText: 'Name',),
+                  style: const TextStyle(color: Colors.black),
+                  validator: ValidationBuilder().required().minLength(3).maxLength(30).build(),
                 ),
-                style: const TextStyle(color: Colors.black),
-                validator: ValidationBuilder().minLength(3).maxLength(20).build(),
-              ),
-              const SizedBox(height: 20),
-              TextFormField(
-                controller: _textFieldControllerPhoneNumber,
-                decoration: InputDecoration(
-                  hintText: 'Phone Number',
-                  filled: true,
-                  fillColor: Colors.white,
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.pink),
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                  hintStyle: const TextStyle(color: Colors.pink),
+                const SizedBox(height: 20),
+                TextFormField(
+                  controller: _textFieldControllerPhoneNumber,
+                  decoration: const InputDecoration(labelText: 'Phone Number',),
+                  style: const TextStyle(color: Colors.black),
+                  validator: ValidationBuilder().phone().maxLength(50).build(),
                 ),
-                style: const TextStyle(color: Colors.black),
-                validator: ValidationBuilder().phone().maxLength(50).build(),
-              ),
-              const SizedBox(height: 20),
-              MultiSelect(
-                "Preferences",
-                "Preferences",
-                Preferences().getPreferences(),
-                onMultiSelectConfirm: (List<ItemObject> results) {
-                  _selectedPreferences = results;
-                },
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    _continue();
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  primary: Colors.pink,
-                  onPrimary: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                const SizedBox(height: 20),
+                MultiSelect(
+                  "Preferences",
+                  "Preferences",
+                  Preferences().getPreferences(),
+                  onMultiSelectConfirm: (List<ItemObject> results) {
+                    _selectedPreferences = results;
+                  },
                 ),
-                child: const Text('Continue'),
-              ),
-            ],
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      _continue();
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white, backgroundColor: Colors.pink,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text('Continue'),
+                ),
+              ],
+            ),
           ),
         ),
       ),

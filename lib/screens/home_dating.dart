@@ -106,67 +106,14 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
                   const SizedBox(height: 8.0),
                   Text(
                     singletonUser?.details ?? 'i like long walks on the beach',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 16.0,
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 32.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/check_likes');
-                    },
-                    child: const Text('Check Likes'),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.all(50.0),
-                      shape: const CircleBorder(
-                        side: BorderSide(
-                          color: Colors.pink,
-                          width: 2.0,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16.0),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/check_matches');
-                    },
-                    child: const Text('Check Matches'),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.all(50.0),
-                      shape: const CircleBorder(),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16.0),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/add_likes');
-                    },
-                    child: const Text('Add Likes'),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.all(50.0),
-                      shape: const CircleBorder(
-                        side: BorderSide(
-                          color: Colors.pink,
-                          width: 2.0,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+
           ],
         ),
       ),

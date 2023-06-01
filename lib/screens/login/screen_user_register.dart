@@ -8,7 +8,10 @@ import '../../model/boundaries/user_boundary.dart';
 
 
 class ScreenRegister extends StatefulWidget {
-  const ScreenRegister({Key? key}) : super(key: key);
+
+  const ScreenRegister({
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<ScreenRegister> createState() => _ScreenRegisterState();
@@ -24,97 +27,99 @@ class _ScreenRegisterState extends State<ScreenRegister> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Center( // Center the "Register" title
-          child: Text(
-            'Register',
-            style: TextStyle(color: Colors.white),
+    return MaterialApp(
+      theme: ThemeData(
+        primarySwatch: Colors.pink,
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.white,
+          focusedBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: Colors.white),
+            borderRadius: BorderRadius.circular(8.0),
           ),
+          enabledBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: Colors.white),
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          labelStyle: const TextStyle(color: Colors.pinkAccent),
         ),
-        backgroundColor: Colors.pink,
       ),
-      body: SingleChildScrollView(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Container(
-                    width: 200,
-                    height: 200,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.pink, width: 2),
-                      shape: BoxShape.circle,
-                      image: DecorationImage(
-                        image: NetworkImage(_avatarPath),
-                        fit: BoxFit.contain,
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Center( // Center the "Register" title
+            child: Text(
+              'Register',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+          backgroundColor: Colors.pink,
+        ),
+        body: SingleChildScrollView(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(
+                      width: 200,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.pink, width: 2),
+                        shape: BoxShape.circle,
+                        image: DecorationImage(
+                          image: NetworkImage(_avatarPath),
+                          fit: BoxFit.contain,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () {
-                      _imagePicker(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white, backgroundColor: Colors.pink,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: () {
+                        _imagePicker(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white, backgroundColor: Colors.pink,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
+                      child: const Text('Choose Avatar'),
                     ),
-                    child: const Text('Choose Avatar'),
-                  ),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: _textFieldControllerEmail,
-                    decoration: InputDecoration(
-                      hintText: 'Email',
-                      filled: true,
-                      fillColor: Colors.white,
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Colors.pink),
-                        borderRadius: BorderRadius.circular(8.0),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _textFieldControllerEmail,
+                      decoration: const InputDecoration(labelText: 'Email',),
+                      style: const TextStyle(color: Colors.black),
+                      validator: ValidationBuilder().email().maxLength(50).build(),
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _textFieldControllerUsername,
+                      decoration: const InputDecoration(labelText: 'User name',),
+                      style: const TextStyle(color: Colors.black),
+                      validator: ValidationBuilder().required().maxLength(50).build(),
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          _continue();
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white, backgroundColor: Colors.pink,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
+                      child: const Text('Continue'),
                     ),
-                    style: const TextStyle(color: Colors.black),
-                    validator: ValidationBuilder().email().maxLength(50).build(),
-                  ),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: _textFieldControllerUsername,
-                    decoration: InputDecoration(
-                      hintText: 'Username',
-                      filled: true,
-                      fillColor: Colors.white,
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Colors.pink),
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                    ),
-                    style: const TextStyle(color: Colors.black),
-                    validator: ValidationBuilder().minLength(3).maxLength(20).build(),
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        _continue();
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white, backgroundColor: Colors.pink,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text('Continue'),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
