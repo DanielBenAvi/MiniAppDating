@@ -104,7 +104,7 @@ class UserApi extends BaseApi {
       body: jsonEncode(updateUserBoundary),
     );
 
-    debugPrint('LOG --- response: ${response.toString()}');
+    debugPrint('LOG --- response: ${response.statusCode.toString()}');
   }
 
 

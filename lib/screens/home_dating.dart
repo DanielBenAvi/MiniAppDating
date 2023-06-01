@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:form_validator/form_validator.dart';
-import 'package:social_hive_client/model/boundaries/user_boundary.dart';
 import 'package:social_hive_client/model/singleton_user.dart';
-import 'package:social_hive_client/rest_api/user_api.dart';
-
 import '../model/boundaries/object_boundary.dart';
+import '../rest_api/command_api.dart';
 
 class HomeDatingScreen extends StatefulWidget {
   final ObjectBoundary? userDetails;
@@ -12,7 +9,8 @@ class HomeDatingScreen extends StatefulWidget {
 
   const HomeDatingScreen({
     Key? key,
-    this.userDetails, this.privateDatingProfile,
+    this.userDetails,
+    this.privateDatingProfile,
   }) : super(key: key);
 
   @override
@@ -20,12 +18,28 @@ class HomeDatingScreen extends StatefulWidget {
 }
 
 class _HomeDatingScreenState extends State<HomeDatingScreen> {
-  SingletonUser? singletonUser;
+  List<ObjectBoundary?> potentialDates = [];
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    singletonUser = ModalRoute.of(context)!.settings.arguments as SingletonUser?;
+  void initState() {
+    super.initState();
+    fetchPotentialDates();
+  }
+
+  Future<void> fetchPotentialDates() async {
+    List<ObjectBoundary?>? potentialDates = await CommandApi().getPotentialDates(SingletonUser.instance.email,
+        widget.userDetails, widget.privateDatingProfile);
+    if(potentialDates == null){
+      await showPopupMessage(context, "Error getting potential dates");
+      _loginScreen(context);
+    }
+    else if(potentialDates.isEmpty){
+      await showPopupMessage(context, "no potential dates");
+    }
+    potentialDates?.forEach((object) {
+      debugPrint(object.toString());
+    });
+
   }
 
   @override
@@ -43,16 +57,18 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
             );
           },
         ),
+        backgroundColor: Colors.pink,
       ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
             UserAccountsDrawerHeader(
-              accountName: Text(singletonUser?.username ?? ''),
-              accountEmail: Text(singletonUser?.email ?? ''),
+              accountName: Text(SingletonUser.instance.username ?? ''),
+              accountEmail: Text(SingletonUser.instance.email ?? ''),
               currentAccountPicture: CircleAvatar(
-                backgroundImage: NetworkImage(singletonUser?.avatar ?? 'https://picsum.photos/200'),
+                backgroundImage: NetworkImage(
+                    SingletonUser.instance.avatar ?? 'https://picsum.photos/200'),
                 backgroundColor: Colors.transparent,
                 foregroundColor: Colors.black,
                 radius: 30,
@@ -62,6 +78,9 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
                     border: Border.all(color: Colors.white, width: 1),
                   ),
                 ),
+              ),
+              decoration: const BoxDecoration(
+                color: Colors.pink,
               ),
             ),
             ListTile(
@@ -82,42 +101,12 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
           ],
         ),
       ),
-      body: SafeArea(
+      body: const SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 32.0),
-            Center(
-              child: Column(
-                children: [
-                  CircleAvatar(
-                    backgroundImage: NetworkImage(singletonUser?.avatar ?? 'https://picsum.photos/200'),
-                    backgroundColor: Colors.transparent,
-                    radius: 60.0,
-                  ),
-                  SizedBox(height: 16.0),
-                  Text(
-                    singletonUser?.username ?? '',
-                    style: const TextStyle(
-                      fontSize: 24.0,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8.0),
-                  Text(
-                    singletonUser?.details ?? 'i like long walks on the beach',
-                    style: const TextStyle(
-                      fontSize: 16.0,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-          ],
+          children: [],
         ),
       ),
-
     );
   }
 
@@ -125,4 +114,24 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
     Navigator.pop(context);
     Navigator.pushNamed(context, '/login');
   }
+
+  Future<void> showPopupMessage(BuildContext context, String message) async {
+    final snackBar = SnackBar(
+      content: Text(
+        message,
+        style: const TextStyle(
+          fontSize: 16.0,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+      ),
+      backgroundColor: Colors.redAccent,
+      duration: const Duration(seconds: 3),
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+
+    await Future.delayed(const Duration(seconds: 3));
+  }
+
 }

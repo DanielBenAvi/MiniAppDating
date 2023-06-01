@@ -10,11 +10,11 @@ import 'base_api.dart';
 
 class CommandApi extends BaseApi {
   SingletonDemoObject demoObject = SingletonDemoObject.instance;
-  /// get all events that the user is participating in
+
   Future<ObjectBoundary?> getMyUserDetailsByEmail(String email) async {
     UserApi().updateRole('MINIAPP_USER');
     // Create command
-    debugPrint(demoObject.uuid);
+
     Map<String, dynamic> command = {
       "commandId": {},
       "command": "GET_USER_DETAILS_BY_EMAIL",
@@ -49,6 +49,47 @@ class CommandApi extends BaseApi {
     Map<String, dynamic> responseBody = jsonDecode(response.body);
     return ObjectBoundary.fromJson(responseBody.entries.first.value);
   }
+
+  Future<List<ObjectBoundary?>?> getPotentialDates(String? email, ObjectBoundary? userDetails,
+      ObjectBoundary? privateDatingProfile) async {
+    UserApi().updateRole('MINIAPP_USER');
+    // Create command
+    Map<String, dynamic> command = {
+      "commandId": {},
+      "command": "GET_POTENTIAL_DATES",
+      "targetObject": {
+        "objectId": privateDatingProfile?.objectId
+      },
+      "invokedBy": {
+        "userId": {"superapp": "2023b.LiorAriely", "email": email}
+      },
+      "commandAttributes": {'page': 0 ,'size': 5, 'userDetailsId': userDetails?.objectId}
+    };
+
+    // Post command
+    http.Response response = await http.post(
+      Uri.parse('http://$host:$portNumber/superapp/miniapp/DATING'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(command),
+    );
+    UserApi().updateRole('SUPERAPP_USER');
+
+    if (response.statusCode != 200) {
+      debugPrint('LOG --- Failed to load potential dates. Response Type: ${response.statusCode}');
+      return null;
+    }
+    Map<String, dynamic> responseBody = jsonDecode(response.body);
+    List<ObjectBoundary?> potentialDates = [];
+
+    responseBody.forEach((key, value) {
+      potentialDates.add(ObjectBoundary.fromJson(value));
+    });
+
+    return potentialDates;
+  }
+
 
 
 }

@@ -10,6 +10,8 @@ import 'package:social_hive_client/rest_api/object_api.dart';
 import 'package:social_hive_client/rest_api/user_api.dart';
 import 'package:social_hive_client/screens/login/screen_dating_profile_register.dart';
 
+import '../home_dating.dart';
+
 class ScreenLogin extends StatefulWidget {
   const ScreenLogin({Key? key}) : super(key: key);
 
@@ -97,6 +99,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
     singletonUser.username = userBoundary.username;
     singletonUser.avatar = userBoundary.avatar;
     singletonUser.role = userBoundary.role;
+
     await ObjectApi().getDemoObject();
 
     ObjectBoundary? userDetails = await CommandApi().getMyUserDetailsByEmail(singletonUser.email!);
@@ -132,8 +135,13 @@ class _ScreenLoginState extends State<ScreenLogin> {
 
   void _screenHomeDatingScreenState(
       ObjectBoundary? userDetails, ObjectBoundary? privateDatingProfile) {
-    Navigator.pop(context);
-    Navigator.pushNamed(context, '/home_dating');
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HomeDatingScreen(userDetails: userDetails,
+          privateDatingProfile: privateDatingProfile,),
+      ),
+    );
   }
 
   void _datingProfileScreenState(ObjectBoundary? userDetails) {

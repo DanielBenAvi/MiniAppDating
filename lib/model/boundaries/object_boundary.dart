@@ -43,6 +43,12 @@ class ObjectBoundary {
         'createdBy': createdBy.toJson(),
         'objectDetails': objectDetails,
       };
+  @override
+  String toString() {
+    return 'ObjectBoundary{objectId: $objectId.to, type: $type, alias: $alias, '
+        'active: $active, creationTimestamp: $creationTimestamp, location: $location, createdBy: $createdBy, objectDetails: $objectDetails}';
+  }
+
 }
 
 class ObjectId {
