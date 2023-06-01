@@ -97,6 +97,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
     singletonUser.username = userBoundary.username;
     singletonUser.avatar = userBoundary.avatar;
     singletonUser.role = userBoundary.role;
+    await ObjectApi().getDemoObject();
 
     ObjectBoundary? userDetails = await CommandApi().getMyUserDetailsByEmail(singletonUser.email!);
 

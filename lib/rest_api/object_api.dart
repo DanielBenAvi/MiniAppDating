@@ -11,6 +11,7 @@ import 'package:social_hive_client/rest_api/base_api.dart';
 import 'package:social_hive_client/rest_api/user_api.dart';
 
 import '../model/PrivateDatingProfile.dart';
+import '../model/singleton_demo_object.dart';
 
 class ObjectApi extends BaseApi {
   Future<ObjectBoundary> postObject(ObjectBoundary objectBoundary) async {
@@ -178,7 +179,34 @@ class ObjectApi extends BaseApi {
 
   }
 
+  Future getDemoObject() async {
+    final client = RetryClient(http.Client());
+    try {
+      final response = await client.get(Uri.parse(
+          'http://$host:$portNumber/superapp/objects/search/byAlias/OBJECT_FOR_COMMAND_WITHOUT_TARGET_OBJECT?userSuperapp=$superApp&userEmail=${SingletonUser.instance.email}'));
+      if (response.statusCode != 200) {
+        debugPrint('LOG --- Failed to get demo object');
+        return;
+      }
 
+      if (jsonDecode(response.body).isEmpty) {
+        debugPrint('LOG --- Demo object not found, creating one');
+        await UserApi().updateRole(
+            'SUPERAPP_USER'); // update role to SUPERAPP_USER only SuperApp_user can create objects
+        // await createDemoObject();
+        return;
+      }
+
+      Map<String, dynamic> object = jsonDecode(response.body).first;
+      SingletonDemoObject singletonDemoObject = SingletonDemoObject.instance;
+      singletonDemoObject.uuid = object['objectId']['internalObjectId'];
+      debugPrint('LOG --- ${SingletonDemoObject.instance}');
+    } catch (e) {
+      debugPrint('LOG --- Failed to get demo object');
+    } finally {
+      client.close();
+    }
+  }
 
 
 

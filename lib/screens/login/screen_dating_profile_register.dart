@@ -29,13 +29,10 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
   Gender? _selectedGender;
   final List<Gender> _selectedSexualPreference = [];
   DateTime? _selectedDateOfBirth;
-  File? _selectedImage;
   RangeValues _ageRangeValues = const RangeValues(18, 40);
   final _formKey = GlobalKey<FormState>();
 
-  PlatformFile? pickedFile;
-  UploadTask? uploadTask;
-  String? downloadURL;
+
 
   int calculateAge(DateTime dateOfBirth) {
     DateTime currentDate = DateTime.now();
@@ -224,9 +221,6 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
                   }).toList(),
                 ),
                 const SizedBox(height: 16.0),
-                OutlinedButton(
-                    onPressed: _filePicker, child: const Text('Add Image')),
-                const SizedBox(height: 16.0),
                 ElevatedButton(
                   onPressed: _registerDatingProfile,
                   child: const Text('Register'),
@@ -271,25 +265,7 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
       _screenHomeDatingScreenState();
     }
   }
-  Future _filePicker() async {
-    final result = await FilePicker.platform.pickFiles();
-    if (result == null) return;
 
-    setState(() {
-      pickedFile = result.files.first;
-    });
-    Uint8List? uploadFile = result.files.single.bytes;
-    final path = 'files/${pickedFile!.name}';
-
-    final ref = FirebaseStorage.instance.ref().child(path);
-    uploadTask = ref.putData(uploadFile!);
-    final snapshot = await uploadTask!.whenComplete(() {});
-    final urlDownload = await snapshot.ref.getDownloadURL();
-    setState(() {
-      downloadURL = urlDownload;
-    });
-    debugPrint('Download-Link: $urlDownload');
-  }
 
   void _showErrorDialog(BuildContext context, String errorMessage) {
     showDialog(

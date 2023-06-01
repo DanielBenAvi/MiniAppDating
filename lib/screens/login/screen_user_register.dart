@@ -1,3 +1,7 @@
+import 'dart:typed_data';
+
+import 'package:file_picker/file_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:form_validator/form_validator.dart';
 import 'package:social_hive_client/constants/roles.dart';
@@ -23,7 +27,9 @@ class _ScreenRegisterState extends State<ScreenRegister> {
   final _formKey = GlobalKey<FormState>();
   late String _avatarPath =
       'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSw4dcOs0ebrWK3g4phCh7cfF-aOM3rhxnsCQ&usqp=CAU';
-
+  PlatformFile? pickedFile;
+  UploadTask? uploadTask;
+  String? downloadURL;
 
   @override
   Widget build(BuildContext context) {
@@ -76,19 +82,9 @@ class _ScreenRegisterState extends State<ScreenRegister> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: () {
-                        _imagePicker(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white, backgroundColor: Colors.pink,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: const Text('Choose Avatar'),
-                    ),
+                    const SizedBox(height: 16.0),
+                    OutlinedButton(
+                        onPressed: _filePicker, child: const Text('Add Image')),
                     const SizedBox(height: 20),
                     TextFormField(
                       controller: _textFieldControllerEmail,
@@ -158,13 +154,7 @@ class _ScreenRegisterState extends State<ScreenRegister> {
   // }
 
 
-  Future<void> _imagePicker(BuildContext context) async {
-    final result = await Navigator.pushNamed(context, '/image_picker');
-    setState(() {
-      _avatarPath = (result as String?)!;
-    });
-    if (!mounted) return;
-  }
+
 
   SingletonUser _setSingletonUser() {
     SingletonUser singletonUser = SingletonUser.instance;
@@ -210,6 +200,27 @@ class _ScreenRegisterState extends State<ScreenRegister> {
   void _userDetailsScreenState() {
     Navigator.pop(context);
     Navigator.pushNamed(context, '/screen_user_details_register');
+  }
+
+  Future _filePicker() async {
+    final result = await FilePicker.platform.pickFiles();
+    if (result == null) return;
+
+    setState(() {
+      pickedFile = result.files.first;
+    });
+    Uint8List? uploadFile = result.files.single.bytes;
+    final path = 'files/${pickedFile!.name}';
+
+    final ref = FirebaseStorage.instance.ref().child(path);
+    uploadTask = ref.putData(uploadFile!);
+    final snapshot = await uploadTask!.whenComplete(() {});
+    final urlDownload = await snapshot.ref.getDownloadURL();
+    setState(() {
+      downloadURL = urlDownload;
+      _avatarPath = urlDownload; // Update the avatar path with the new image URL
+    });
+    debugPrint('Download-Link: $urlDownload');
   }
 
 }
