@@ -45,43 +45,43 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
     });
   }
 
+  void likeProfile(int index) {
+    // Perform the like action for the profile at the given index
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Home Dating Screen'),
-        leading: Builder(
-          builder: (BuildContext context) {
-            return IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-            );
-          },
-        ),
+        title: const Text('Home Dating'),
+        centerTitle: true,
         backgroundColor: Colors.pink,
+        elevation: 0,
       ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
             UserAccountsDrawerHeader(
-              accountName: Text(SingletonUser.instance.username ?? ''),
-              accountEmail: Text(SingletonUser.instance.email ?? ''),
+              accountName: Text(
+                SingletonUser.instance.username ?? '',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              accountEmail: Text(
+                SingletonUser.instance.email ?? '',
+                style: TextStyle(
+                  fontSize: 16,
+                ),
+              ),
               currentAccountPicture: CircleAvatar(
                 backgroundImage: NetworkImage(
                   SingletonUser.instance.avatar ?? 'https://picsum.photos/200',
                 ),
                 backgroundColor: Colors.transparent,
-                foregroundColor: Colors.black,
-                radius: 40,
-                child: Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
-                  ),
-                ),
+                radius: 60,
               ),
               decoration: const BoxDecoration(
                 color: Colors.pink,
@@ -89,7 +89,10 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.person),
-              title: const Text('Edit Profile'),
+              title: const Text(
+                'Edit Profile',
+                style: TextStyle(fontSize: 16),
+              ),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.pushNamed(context, '/edit_profile');
@@ -97,7 +100,10 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.logout),
-              title: const Text('Logout'),
+              title: const Text(
+                'Logout',
+                style: TextStyle(fontSize: 16),
+              ),
               onTap: () {
                 _loginScreen(context);
               },
@@ -109,10 +115,21 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Center(
+                child: Text(
+                  'Potential Dates',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
             Expanded(
               child: ListView.builder(
-                padding: const EdgeInsets.all(8),
-                shrinkWrap: true,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: potentialDates.length,
                 itemBuilder: (context, index) {
                   ObjectBoundary? potentialDate = potentialDates[index];
@@ -125,50 +142,55 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
                   int? age = publicProfile?['age'];
                   String? gender = publicProfile?['gender'];
 
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: ListTile(
-                      leading: Container(
-                        width: 120,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
-                        ),
-                        child: CircleAvatar(
-                          radius: 60,
-                          backgroundImage: NetworkImage(profilePicture ?? ''),
-                        ),
-                      ),
-                      title: Column(
+                  return Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            nickname ?? '',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
+                          CircleAvatar(
+                            radius: 48,
+                            backgroundImage: NetworkImage(profilePicture ?? ''),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildProfileAttributeLabel('Name'),
+                                Text(
+                                  nickname ?? '',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                _buildProfileAttributeLabel('Age & Gender'),
+                                Text(
+                                  '$age years old, $gender',
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                                const SizedBox(height: 8),
+                                _buildProfileAttributeLabel('Bio'),
+                                Text(
+                                  bio ?? '',
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Text(
-                                '$age years old',
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                gender ?? '',
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                            ],
+                          IconButton(
+                            icon: Icon(Icons.favorite_border),
+                            onPressed: () {
+                              likeProfile(index);
+                            },
                           ),
                         ],
-                      ),
-                      subtitle: Text(
-                        bio ?? '',
-                        style: const TextStyle(fontSize: 16),
                       ),
                     ),
                   );
@@ -177,6 +199,17 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildProfileAttributeLabel(String label) {
+    return Text(
+      '$label:',
+      style: TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.bold,
+        color: Colors.grey,
       ),
     );
   }
