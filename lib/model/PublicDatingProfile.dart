@@ -2,7 +2,7 @@ import '../constants/Gender.dart';
 
 class PublicDatingProfile {
   String? nickName;
-  Gender? gender;
+  String? gender;
   int? age;
   String? bio;
   List<String> pictures;

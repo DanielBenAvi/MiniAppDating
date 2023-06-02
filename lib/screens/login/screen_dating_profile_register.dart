@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:social_hive_client/model/PrivateDatingProfile.dart';
+import 'package:social_hive_client/model/singleton_user.dart';
 import 'dart:io';
 import '../../constants/Gender.dart';
 import '../../model/PublicDatingProfile.dart';
@@ -27,7 +28,9 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
 
   final TextEditingController _bioController = TextEditingController();
   Gender? _selectedGender;
+  String? _stringSelectedGender;
   final List<Gender> _selectedSexualPreference = [];
+  final List<String> _stringSelectedSexualPrefrences = [];
   DateTime? _selectedDateOfBirth;
   RangeValues _ageRangeValues = const RangeValues(18, 40);
   final _formKey = GlobalKey<FormState>();
@@ -165,13 +168,14 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
                   onChanged: (Gender? newValue) {
                     setState(() {
                       _selectedGender = newValue;
+                      _stringSelectedGender = _selectedGender?.toString().split('.').last ?? '';
                     });
                   },
                   items: Gender.values.map<DropdownMenuItem<Gender>>((Gender value) {
                     return DropdownMenuItem<Gender>(
                       value: value,
                       child: Text(
-                        value.toString().substring(value.toString().indexOf('.') + 1),
+                        value.toString().split('.').last,
                       ),
                     );
                   }).toList(),
@@ -210,8 +214,10 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
                           setState(() {
                             if (selected) {
                               _selectedSexualPreference.add(gender);
+                              _stringSelectedSexualPrefrences.add(gender.toString().split('.').last);
                             } else {
                               _selectedSexualPreference.remove(gender);
+                              _stringSelectedSexualPrefrences.remove(gender.toString().split('.').last);
                             }
                           });
                         },
@@ -220,12 +226,12 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
                     );
                   }).toList(),
                 ),
+
                 const SizedBox(height: 16.0),
                 ElevatedButton(
                   onPressed: _registerDatingProfile,
                   child: const Text('Register'),
                 ),
-
 
               ],
             ),
@@ -237,11 +243,13 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
 
   Future<void> _registerDatingProfile() async {
     if (_formKey.currentState!.validate()) {
+      List<String> picture =[SingletonUser.instance.avatar!];
       PublicDatingProfile publicDP = PublicDatingProfile(
         nickName: widget.userDetails?.objectDetails['name'],
-        gender: _selectedGender,
+        gender: _stringSelectedGender,
         age: calculateAge(_selectedDateOfBirth!),
         bio: _bioController.text,
+        pictures: picture,
       );
 
       PrivateDatingProfile privateDP = PrivateDatingProfile(
@@ -251,7 +259,7 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
         maxAge: _ageRangeValues.end.toInt(),
         minAge: _ageRangeValues.start.toInt(),
         phoneNumber: widget.userDetails?.objectDetails['phoneNum'],
-        genderPreferences: _selectedSexualPreference,
+        genderPreferences: _stringSelectedSexualPrefrences,
       );
       ObjectBoundary? privateDatingProfile = await _createPrivateDatingProfile(privateDP);
       if (privateDatingProfile == null) {
@@ -262,7 +270,7 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
       String? internalObjectId = widget.userDetails?.objectId?.internalObjectId;
       ObjectApi().addChild(internalObjectId!, privateDatingProfile.objectId) ;
 
-      _screenHomeDatingScreenState();
+      _screenLogin();
     }
   }
 
@@ -300,9 +308,9 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
     return object;
   }
 
-  void _screenHomeDatingScreenState() {
+  void _screenLogin() {
     Navigator.pop(context);
-    Navigator.pushNamed(context, '/home_dating');
+    Navigator.pushNamed(context, '/login');
   }
 
 }

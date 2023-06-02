@@ -9,7 +9,7 @@ class PrivateDatingProfile {
   int maxAge;
   int minAge;
   //String address;
-  List<Gender> genderPreferences;
+  List<String> genderPreferences;
   List<String> matches;
   List<String> likes;
 
@@ -20,10 +20,10 @@ class PrivateDatingProfile {
     required this.distanceRange,
     required this.maxAge,
     required this.minAge,
-    required List<Gender>? genderPreferences,
+    required List<String>? genderPreferences,
     List<String>? matches,
     List<String>? likes,
-  })  : genderPreferences = genderPreferences ?? [],
+  })  : genderPreferences = genderPreferences ?? [] ,
         matches = matches ?? [],
         likes = likes ?? [];
 
@@ -75,11 +75,11 @@ class PrivateDatingProfile {
     this.minAge = minAge;
   }
 
-  List<Gender> getGenderPreferences() {
+  List<String> getGenderPreferences() {
     return genderPreferences;
   }
 
-  void setGenderPreferences(List<Gender> genderPreferences) {
+  void setGenderPreferences(List<String> genderPreferences) {
     this.genderPreferences = genderPreferences;
   }
 
