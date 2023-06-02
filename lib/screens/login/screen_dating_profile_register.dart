@@ -168,7 +168,7 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
                   onChanged: (Gender? newValue) {
                     setState(() {
                       _selectedGender = newValue;
-                      _stringSelectedGender = _selectedGender?.toString().split('.').last ?? '';
+                      _stringSelectedGender = _selectedGender?.toString().split('.').last.toUpperCase() ?? '';
                     });
                   },
                   items: Gender.values.map<DropdownMenuItem<Gender>>((Gender value) {
@@ -214,7 +214,7 @@ class _DatingProfileScreenState extends State<DatingProfileScreen> {
                           setState(() {
                             if (selected) {
                               _selectedSexualPreference.add(gender);
-                              _stringSelectedSexualPrefrences.add(gender.toString().split('.').last);
+                              _stringSelectedSexualPrefrences.add(gender.toString().split('.').last.toUpperCase());
                             } else {
                               _selectedSexualPreference.remove(gender);
                               _stringSelectedSexualPrefrences.remove(gender.toString().split('.').last);

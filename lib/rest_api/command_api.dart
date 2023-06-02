@@ -51,7 +51,7 @@ class CommandApi extends BaseApi {
   }
 
   Future<List<ObjectBoundary?>?> getPotentialDates(String? email, ObjectBoundary? userDetails,
-      ObjectBoundary? privateDatingProfile) async {
+      ObjectBoundary? privateDatingProfile, int pageNum) async {
     UserApi().updateRole('MINIAPP_USER');
     // Create command
     Map<String, dynamic> command = {
@@ -63,7 +63,7 @@ class CommandApi extends BaseApi {
       "invokedBy": {
         "userId": {"superapp": "2023b.LiorAriely", "email": email}
       },
-      "commandAttributes": {'page': 0 ,'size': 5, 'userDetailsId': userDetails?.objectId}
+      "commandAttributes": {'page': pageNum ,'size': 5, 'userDetailsId': userDetails?.objectId}
     };
 
     // Post command
@@ -83,9 +83,14 @@ class CommandApi extends BaseApi {
     Map<String, dynamic> responseBody = jsonDecode(response.body);
     List<ObjectBoundary?> potentialDates = [];
 
+
     responseBody.forEach((key, value) {
-      potentialDates.add(ObjectBoundary.fromJson(value));
+      List<dynamic> dataList = value as List<dynamic>;
+      for (var data in dataList) {
+        potentialDates.add(ObjectBoundary.fromJson(data));
+      }
     });
+
 
     return potentialDates;
   }

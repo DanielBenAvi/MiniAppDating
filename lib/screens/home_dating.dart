@@ -27,19 +27,22 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
   }
 
   Future<void> fetchPotentialDates() async {
-    List<ObjectBoundary?>? potentialDates = await CommandApi().getPotentialDates(SingletonUser.instance.email,
-        widget.userDetails, widget.privateDatingProfile);
-    if(potentialDates == null){
+    int pageNum = 0;
+    List<ObjectBoundary?>? dates = await CommandApi().getPotentialDates(
+      SingletonUser.instance.email,
+      widget.userDetails,
+      widget.privateDatingProfile,
+      pageNum,
+    );
+    if (dates == null) {
       await showPopupMessage(context, "Error getting potential dates");
       _loginScreen(context);
+    } else if (dates.isEmpty) {
+      await showPopupMessage(context, "No potential dates");
     }
-    else if(potentialDates.isEmpty){
-      await showPopupMessage(context, "no potential dates");
-    }
-    potentialDates?.forEach((object) {
-      debugPrint(object.toString());
+    setState(() {
+      potentialDates = dates ?? [];
     });
-
   }
 
   @override
@@ -68,14 +71,15 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
               accountEmail: Text(SingletonUser.instance.email ?? ''),
               currentAccountPicture: CircleAvatar(
                 backgroundImage: NetworkImage(
-                    SingletonUser.instance.avatar ?? 'https://picsum.photos/200'),
+                  SingletonUser.instance.avatar ?? 'https://picsum.photos/200',
+                ),
                 backgroundColor: Colors.transparent,
                 foregroundColor: Colors.black,
-                radius: 30,
+                radius: 40,
                 child: Container(
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 1),
+                    border: Border.all(color: Colors.white, width: 2),
                   ),
                 ),
               ),
@@ -101,10 +105,77 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
           ],
         ),
       ),
-      body: const SafeArea(
+      body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [],
+          children: [
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.all(8),
+                shrinkWrap: true,
+                itemCount: potentialDates.length,
+                itemBuilder: (context, index) {
+                  ObjectBoundary? potentialDate = potentialDates[index];
+                  Map<String, dynamic>? publicProfile =
+                  potentialDate?.objectDetails?['publicProfile'];
+                  String? profilePicture =
+                      publicProfile?['pictures']?.first ?? '';
+                  String? nickname = publicProfile?['nickName'];
+                  String? bio = publicProfile?['bio'];
+                  int? age = publicProfile?['age'];
+                  String? gender = publicProfile?['gender'];
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: ListTile(
+                      leading: Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                        ),
+                        child: CircleAvatar(
+                          radius: 60,
+                          backgroundImage: NetworkImage(profilePicture ?? ''),
+                        ),
+                      ),
+                      title: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            nickname ?? '',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Text(
+                                '$age years old',
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                gender ?? '',
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      subtitle: Text(
+                        bio ?? '',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -133,5 +204,4 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
 
     await Future.delayed(const Duration(seconds: 3));
   }
-
 }
