@@ -12,7 +12,7 @@ class CommandApi extends BaseApi {
   SingletonDemoObject demoObject = SingletonDemoObject.instance;
 
   Future<ObjectBoundary?> getMyUserDetailsByEmail(String email) async {
-    UserApi().updateRole('MINIAPP_USER');
+    await UserApi().updateRole('MINIAPP_USER');
     // Create command
 
     Map<String, dynamic> command = {
@@ -38,7 +38,7 @@ class CommandApi extends BaseApi {
       },
       body: jsonEncode(command),
     );
-    UserApi().updateRole('SUPERAPP_USER');
+    await UserApi().updateRole('SUPERAPP_USER');
 
     if (response.statusCode != 200) {
       debugPrint('LOG --- Failed to load UserDetails. Response Type: ${response.statusCode}');
@@ -52,7 +52,7 @@ class CommandApi extends BaseApi {
 
   Future<List<ObjectBoundary?>?> getPotentialDates(String? email, ObjectBoundary? userDetails,
       ObjectBoundary? privateDatingProfile, int pageNum) async {
-    UserApi().updateRole('MINIAPP_USER');
+    await UserApi().updateRole('MINIAPP_USER');
     // Create command
     Map<String, dynamic> command = {
       "commandId": {},
@@ -74,7 +74,7 @@ class CommandApi extends BaseApi {
       },
       body: jsonEncode(command),
     );
-    UserApi().updateRole('SUPERAPP_USER');
+    await UserApi().updateRole('SUPERAPP_USER');
 
     if (response.statusCode != 200) {
       debugPrint('LOG --- Failed to load potential dates. Response Type: ${response.statusCode}');
@@ -97,7 +97,7 @@ class CommandApi extends BaseApi {
 
   Future<bool?> likeDatingProfile(ObjectBoundary? myDatingProfile, ObjectBoundary? targetDatingProfile,
       String? email) async {
-    UserApi().updateRole('MINIAPP_USER');
+    await UserApi().updateRole('MINIAPP_USER');
     // Create command
     Map<String, dynamic> command = {
       "commandId": {},
@@ -119,7 +119,7 @@ class CommandApi extends BaseApi {
       },
       body: jsonEncode(command),
     );
-    UserApi().updateRole('SUPERAPP_USER');
+    await UserApi().updateRole('SUPERAPP_USER');
 
     if (response.statusCode != 200) {
       debugPrint('LOG --- Failed to like profile. Response Type: ${response.statusCode}');
@@ -131,7 +131,7 @@ class CommandApi extends BaseApi {
 
   Future<List<ObjectBoundary?>?> getMatches(String? email, ObjectBoundary? privateDatingProfile,
       int pageNum) async {
-    UserApi().updateRole('MINIAPP_USER');
+    await UserApi().updateRole('MINIAPP_USER');
     // Create command
     Map<String, dynamic> command = {
       "commandId": {},
@@ -153,7 +153,7 @@ class CommandApi extends BaseApi {
       },
       body: jsonEncode(command),
     );
-    UserApi().updateRole('SUPERAPP_USER');
+    await UserApi().updateRole('SUPERAPP_USER');
 
     if (response.statusCode != 200) {
       debugPrint('LOG --- Failed to load Matches. Response Type: ${response.statusCode}');
@@ -175,7 +175,7 @@ class CommandApi extends BaseApi {
   }
   Future<bool?> unMatch(ObjectBoundary? myDatingProfile, ObjectBoundary? targetDatingProfile,
       String? email) async {
-    UserApi().updateRole('MINIAPP_USER');
+    await UserApi().updateRole('MINIAPP_USER');
     // Create command
     Map<String, dynamic> command = {
       "commandId": {},
@@ -197,7 +197,7 @@ class CommandApi extends BaseApi {
       },
       body: jsonEncode(command),
     );
-    UserApi().updateRole('SUPERAPP_USER');
+    await UserApi().updateRole('SUPERAPP_USER');
 
     if (response.statusCode != 200) {
       debugPrint('LOG --- Failed to like profile. Response Type: ${response.statusCode}');

@@ -21,11 +21,14 @@ class HomeDatingScreen extends StatefulWidget {
 class _HomeDatingScreenState extends State<HomeDatingScreen> {
   List<ObjectBoundary?> potentialDates = [];
   int pageNum = 0;
+  late List<String> likes;
 
   @override
   void initState() {
     super.initState();
     fetchPotentialDates();
+    likes = widget.privateDatingProfile!.objectDetails['likes'].
+    toString().replaceAll('[', '').replaceAll(']', '').split(',').map((e) => e.trim()).toList();
   }
 
   Future<void> fetchPotentialDates() async {
@@ -77,7 +80,7 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
       await showPopupMessage(context, "Failed to like dating profile", false);
     }
     else if(responseStatus == true){
-      await showPopupMessage(context, "Dating profile $nickname liked", true);
+      await showPopupMessage(context, "Dating profile $nickname engaged", true);
     }
 
   }
@@ -225,9 +228,17 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.favorite_border),
+                            icon: likes.contains('${potentialDate!.objectId.superapp}_${potentialDate.objectId.internalObjectId}')?
+                            const Icon(Icons.favorite):const Icon(Icons.favorite_border),
                             onPressed: () {
-                              likeProfile(potentialDate); // Pass the selected profile
+                              likeProfile(potentialDate); // Pass
+                              setState(() {
+                                String id = '${potentialDate!.objectId.superapp}_${potentialDate.objectId.internalObjectId}';
+                                if(!likes.contains(id)){
+                                  likes.add(id);
+                                }
+
+                              });
                             },
                           ),
                         ],
