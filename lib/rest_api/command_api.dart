@@ -63,7 +63,7 @@ class CommandApi extends BaseApi {
       "invokedBy": {
         "userId": {"superapp": "2023b.LiorAriely", "email": email}
       },
-      "commandAttributes": {'page': pageNum ,'size': 5, 'userDetailsId': userDetails?.objectId}
+      "commandAttributes": {'page': pageNum ,'size': 2, 'userDetailsId': userDetails?.objectId}
     };
 
     // Post command
@@ -93,6 +93,40 @@ class CommandApi extends BaseApi {
 
 
     return potentialDates;
+  }
+
+  Future<bool?> likeDatingProfile(ObjectBoundary? myDatingProfile, ObjectBoundary? targetDatingProfile,
+      String? email) async {
+    UserApi().updateRole('MINIAPP_USER');
+    // Create command
+    Map<String, dynamic> command = {
+      "commandId": {},
+      "command": "LIKE_PROFILE",
+      "targetObject": {
+        "objectId": targetDatingProfile?.objectId
+      },
+      "invokedBy": {
+        "userId": {"superapp": "2023b.LiorAriely", "email": email}
+      },
+      "commandAttributes": {'myDatingProfileId': myDatingProfile?.objectId }
+    };
+
+    // Post command
+    http.Response response = await http.post(
+      Uri.parse('http://$host:$portNumber/superapp/miniapp/DATING'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(command),
+    );
+    UserApi().updateRole('SUPERAPP_USER');
+
+    if (response.statusCode != 200) {
+      debugPrint('LOG --- Failed to like profile. Response Type: ${response.statusCode}');
+      return null;
+    }
+    Map<String, dynamic> responseBody = jsonDecode(response.body);
+    return responseBody[responseBody.keys.first]['like_status'];
   }
 
 

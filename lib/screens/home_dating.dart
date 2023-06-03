@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:social_hive_client/model/singleton_user.dart';
+import 'package:social_hive_client/rest_api/object_api.dart';
 import '../model/boundaries/object_boundary.dart';
 import '../rest_api/command_api.dart';
 
@@ -19,6 +20,7 @@ class HomeDatingScreen extends StatefulWidget {
 
 class _HomeDatingScreenState extends State<HomeDatingScreen> {
   List<ObjectBoundary?> potentialDates = [];
+  int pageNum = 0;
 
   @override
   void initState() {
@@ -27,7 +29,6 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
   }
 
   Future<void> fetchPotentialDates() async {
-    int pageNum = 0;
     List<ObjectBoundary?>? dates = await CommandApi().getPotentialDates(
       SingletonUser.instance.email,
       widget.userDetails,
@@ -35,18 +36,50 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
       pageNum,
     );
     if (dates == null) {
-      await showPopupMessage(context, "Error getting potential dates");
+      await showPopupMessage(context, "Error getting potential dates", false);
       _loginScreen(context);
     } else if (dates.isEmpty) {
-      await showPopupMessage(context, "No potential dates");
+      await showPopupMessage(context, "No potential dates", false);
     }
     setState(() {
       potentialDates = dates ?? [];
     });
   }
 
-  void likeProfile(int index) {
-    // Perform the like action for the profile at the given index
+  Future<void> fetchMorePotentialDates() async {
+    pageNum++;
+    List<ObjectBoundary?>? newDates = await CommandApi().getPotentialDates(
+      SingletonUser.instance.email,
+      widget.userDetails,
+      widget.privateDatingProfile,
+      pageNum,
+    );
+    if (newDates == null) {
+      await showPopupMessage(context, "Error getting potential dates", false);
+      pageNum--;
+    } else {
+      setState(() {
+        potentialDates.addAll(newDates);
+      });
+    }
+  }
+
+  Future<void> likeProfile(ObjectBoundary? targetDatingProfile) async {
+    Map<String, dynamic>? publicProfile = targetDatingProfile?.objectDetails['publicProfile'];
+    String? nickname = publicProfile?['nickName'];
+
+    bool? responseStatus = await CommandApi().likeDatingProfile(widget.privateDatingProfile, targetDatingProfile,
+        SingletonUser.instance.email);
+    if(responseStatus == null){
+      await showPopupMessage(context, "Error liking dating profile", false);
+    }
+    else if(responseStatus == false){
+      await showPopupMessage(context, "failed to like dating profile", false);
+    }
+    else if(responseStatus == true){
+      await showPopupMessage(context, "dating profile $nickname liked", true);
+    }
+
   }
 
   @override
@@ -65,14 +98,14 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
             UserAccountsDrawerHeader(
               accountName: Text(
                 SingletonUser.instance.username ?? '',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               accountEmail: Text(
                 SingletonUser.instance.email ?? '',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                 ),
               ),
@@ -115,8 +148,8 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Center(
                 child: Text(
                   'Potential Dates',
@@ -134,7 +167,7 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
                 itemBuilder: (context, index) {
                   ObjectBoundary? potentialDate = potentialDates[index];
                   Map<String, dynamic>? publicProfile =
-                  potentialDate?.objectDetails?['publicProfile'];
+                  potentialDate?.objectDetails['publicProfile'];
                   String? profilePicture =
                       publicProfile?['pictures']?.first ?? '';
                   String? nickname = publicProfile?['nickName'];
@@ -164,7 +197,7 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
                                 _buildProfileAttributeLabel('Name'),
                                 Text(
                                   nickname ?? '',
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -172,22 +205,22 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
                                 const SizedBox(height: 8),
                                 _buildProfileAttributeLabel('Age & Gender'),
                                 Text(
-                                  '$age years old, $gender',
-                                  style: TextStyle(fontSize: 16),
+                                  '$age years old, $gender'.toLowerCase(),
+                                  style: const TextStyle(fontSize: 16),
                                 ),
                                 const SizedBox(height: 8),
                                 _buildProfileAttributeLabel('Bio'),
                                 Text(
                                   bio ?? '',
-                                  style: TextStyle(fontSize: 16),
+                                  style: const TextStyle(fontSize: 16),
                                 ),
                               ],
                             ),
                           ),
                           IconButton(
-                            icon: Icon(Icons.favorite_border),
+                            icon: const Icon(Icons.favorite_border),
                             onPressed: () {
-                              likeProfile(index);
+                              likeProfile(potentialDate); // Pass the selected profile
                             },
                           ),
                         ],
@@ -200,13 +233,19 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: fetchMorePotentialDates,
+        backgroundColor: Colors.pink,
+        child: const Icon(Icons.add),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 
   Widget _buildProfileAttributeLabel(String label) {
     return Text(
       '$label:',
-      style: TextStyle(
+      style: const TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.bold,
         color: Colors.grey,
@@ -219,22 +258,39 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
     Navigator.pushNamed(context, '/login');
   }
 
-  Future<void> showPopupMessage(BuildContext context, String message) async {
-    final snackBar = SnackBar(
-      content: Text(
-        message,
-        style: const TextStyle(
-          fontSize: 16.0,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
+  Future<void> showPopupMessage(BuildContext context, String message, bool green) async {
+    if(green){
+      final snackBar = SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(
+            fontSize: 16.0,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
-      ),
-      backgroundColor: Colors.redAccent,
-      duration: const Duration(seconds: 3),
-    );
-
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        backgroundColor: Colors.greenAccent,
+        duration: const Duration(seconds: 3),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
+    else{
+      final snackBar = SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(
+            fontSize: 16.0,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: Colors.redAccent,
+        duration: const Duration(seconds: 3),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
 
     await Future.delayed(const Duration(seconds: 3));
   }
+
 }
