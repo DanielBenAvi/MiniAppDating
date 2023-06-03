@@ -129,6 +129,83 @@ class CommandApi extends BaseApi {
     return responseBody[responseBody.keys.first]['like_status'];
   }
 
+  Future<List<ObjectBoundary?>?> getMatches(String? email, ObjectBoundary? privateDatingProfile,
+      int pageNum) async {
+    UserApi().updateRole('MINIAPP_USER');
+    // Create command
+    Map<String, dynamic> command = {
+      "commandId": {},
+      "command": "GET_MATCHES",
+      "targetObject": {
+        "objectId": privateDatingProfile?.objectId
+      },
+      "invokedBy": {
+        "userId": {"superapp": "2023b.LiorAriely", "email": email}
+      },
+      "commandAttributes": {'page': pageNum ,'size': 2}
+    };
+
+    // Post command
+    http.Response response = await http.post(
+      Uri.parse('http://$host:$portNumber/superapp/miniapp/DATING'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(command),
+    );
+    UserApi().updateRole('SUPERAPP_USER');
+
+    if (response.statusCode != 200) {
+      debugPrint('LOG --- Failed to load Matches. Response Type: ${response.statusCode}');
+      return null;
+    }
+    Map<String, dynamic> responseBody = jsonDecode(response.body);
+    List<ObjectBoundary?> Matches = [];
+
+
+    responseBody.forEach((key, value) {
+      List<dynamic> dataList = value as List<dynamic>;
+      for (var data in dataList) {
+        Matches.add(ObjectBoundary.fromJson(data));
+      }
+    });
+
+
+    return Matches;
+  }
+  Future<bool?> unMatch(ObjectBoundary? myDatingProfile, ObjectBoundary? targetDatingProfile,
+      String? email) async {
+    UserApi().updateRole('MINIAPP_USER');
+    // Create command
+    Map<String, dynamic> command = {
+      "commandId": {},
+      "command": "UNMATCH_PROFILE",
+      "targetObject": {
+        "objectId": targetDatingProfile?.objectId
+      },
+      "invokedBy": {
+        "userId": {"superapp": "2023b.LiorAriely", "email": email}
+      },
+      "commandAttributes": {'myDatingProfileId': myDatingProfile?.objectId }
+    };
+
+    // Post command
+    http.Response response = await http.post(
+      Uri.parse('http://$host:$portNumber/superapp/miniapp/DATING'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(command),
+    );
+    UserApi().updateRole('SUPERAPP_USER');
+
+    if (response.statusCode != 200) {
+      debugPrint('LOG --- Failed to like profile. Response Type: ${response.statusCode}');
+      return null;
+    }
+    Map<String, dynamic> responseBody = jsonDecode(response.body);
+    return responseBody[responseBody.keys.first]['like_status'];
+  }
 
 
 }

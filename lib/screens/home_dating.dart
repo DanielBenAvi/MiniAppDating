@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:social_hive_client/model/singleton_user.dart';
-import 'package:social_hive_client/rest_api/object_api.dart';
 import '../model/boundaries/object_boundary.dart';
 import '../rest_api/command_api.dart';
+import 'check_matches.dart';
 
 class HomeDatingScreen extends StatefulWidget {
   final ObjectBoundary? userDetails;
@@ -74,19 +74,28 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
       await showPopupMessage(context, "Error liking dating profile", false);
     }
     else if(responseStatus == false){
-      await showPopupMessage(context, "failed to like dating profile", false);
+      await showPopupMessage(context, "Failed to like dating profile", false);
     }
     else if(responseStatus == true){
-      await showPopupMessage(context, "dating profile $nickname liked", true);
+      await showPopupMessage(context, "Dating profile $nickname liked", true);
     }
 
+  }
+
+  void navigateToMatchesScreen(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CheckMatchesScreen(userDetails: widget.userDetails,),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Home Dating'),
+        title: const Text('Potential Dates'),
         centerTitle: true,
         backgroundColor: Colors.pink,
         elevation: 0,
@@ -132,6 +141,16 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
               },
             ),
             ListTile(
+              leading: const Icon(Icons.favorite),
+              title: const Text(
+                'Matches',
+                style: TextStyle(fontSize: 16),
+              ),
+              onTap: () {
+                navigateToMatchesScreen(context);
+              },
+            ),
+            ListTile(
               leading: const Icon(Icons.logout),
               title: const Text(
                 'Logout',
@@ -148,18 +167,6 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Center(
-                child: Text(
-                  'Potential Dates',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -292,5 +299,4 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
 
     await Future.delayed(const Duration(seconds: 3));
   }
-
 }
