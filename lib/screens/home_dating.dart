@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:social_hive_client/model/singleton_user.dart';
+import 'package:social_hive_client/screens/screen_profile.dart';
 import '../model/boundaries/object_boundary.dart';
 import '../rest_api/command_api.dart';
+import 'check_likes.dart';
 import 'check_matches.dart';
 
 class HomeDatingScreen extends StatefulWidget {
@@ -27,11 +29,13 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
   void initState() {
     super.initState();
     fetchPotentialDates();
+    debugPrint(widget.privateDatingProfile.toString());
     likes = widget.privateDatingProfile!.objectDetails['likes'].
     toString().replaceAll('[', '').replaceAll(']', '').split(',').map((e) => e.trim()).toList();
   }
 
   Future<void> fetchPotentialDates() async {
+
     List<ObjectBoundary?>? dates = await CommandApi().getPotentialDates(
       SingletonUser.instance.email,
       widget.userDetails,
@@ -93,7 +97,23 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
       ),
     );
   }
-
+  void navigateToLikesScreen(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ScreenLikes(userDetails: widget.userDetails,),
+      ),
+    );
+  }
+  void navigateToProfileScreen(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ScreenProfileScreen(userDetails: widget.userDetails,
+          privateDatingProfile: widget.privateDatingProfile,),
+      ),
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -135,12 +155,11 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
             ListTile(
               leading: const Icon(Icons.person),
               title: const Text(
-                'Edit Profile',
+                'profile',
                 style: TextStyle(fontSize: 16),
               ),
               onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/edit_profile');
+                navigateToProfileScreen(context);
               },
             ),
             ListTile(
@@ -151,6 +170,16 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
               ),
               onTap: () {
                 navigateToMatchesScreen(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.favorite),
+              title: const Text(
+                'Likes',
+                style: TextStyle(fontSize: 16),
+              ),
+              onTap: () {
+                navigateToLikesScreen(context);
               },
             ),
             ListTile(
@@ -310,4 +339,6 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
 
     await Future.delayed(const Duration(seconds: 3));
   }
+
+
 }

@@ -8,7 +8,7 @@ import 'package:social_hive_client/screens/login/screen_user_register.dart';
 import 'package:social_hive_client/screens/login/screen_user_details_register.dart';
 import 'package:social_hive_client/screens/profile.dart';
 import 'package:social_hive_client/widgets/image_picker.dart';
-import 'package:social_hive_client/screens/edit_profile.dart';
+import 'package:social_hive_client/screens/screen_profile.dart';
 import 'package:social_hive_client/screens/check_likes.dart';
 import 'package:social_hive_client/screens/add_likes.dart';
 import 'package:social_hive_client/screens/check_matches.dart';
@@ -38,8 +38,8 @@ void main() async {
       '/image_picker': (context) => const ImagePickerScreen(),
       '/home_dating': (context) => const HomeDatingScreen(),
       '/choose_location': (context) => const ChooseLocationScreen(),
-      '/edit_profile': (context) => const ChangeProfileScreen(),
-      '/check_likes': (context) => const CheckLikesScreen(),
+      '/edit_profile': (context) => const ScreenProfileScreen(),
+      '/check_likes': (context) => const ScreenLikes(),
       '/add_likes': (context) => const AddLikesScreen(),
       '/check_matches': (context) => const CheckMatchesScreen(),
 

@@ -20,7 +20,8 @@ class CheckMatchesScreen extends StatefulWidget {
 
 
 class _CheckMatchesScreen extends State<CheckMatchesScreen> {
-  List<ObjectBoundary?> potentialDates = [];
+  List<ObjectBoundary?> matchesProfiles = [];
+  List<String?> matchesIds= [];
   int pageNum = 0;
   ObjectBoundary? privateDatingProfile;
 
@@ -31,9 +32,6 @@ class _CheckMatchesScreen extends State<CheckMatchesScreen> {
   }
 
   Future<void> fetchMatches() async {
-    debugPrint("here");
-    debugPrint(widget.userDetails?.objectId.internalObjectId);
-    debugPrint(widget.userDetails.toString());
     List<ObjectBoundary>? objects =
     await ObjectApi().getChildren(widget.userDetails?.objectId.internalObjectId as String);
     if(objects == null) {
@@ -42,7 +40,7 @@ class _CheckMatchesScreen extends State<CheckMatchesScreen> {
     }
     privateDatingProfile = objects?[0];
 
-    List<ObjectBoundary?>? matches = await CommandApi().getMatches(
+    MatchResult? matches = await CommandApi().getMatches(
       SingletonUser.instance.email,
       privateDatingProfile,
       pageNum,
@@ -50,17 +48,18 @@ class _CheckMatchesScreen extends State<CheckMatchesScreen> {
     if (matches == null) {
       await showPopupMessage(context, "Error gettingMatches", false);
       _loginScreen(context);
-    } else if (matches.isEmpty) {
+    } else if (matches.matchesProfile.isEmpty) {
       await showPopupMessage(context, "No Matches", false);
     }
     setState(() {
-      potentialDates = matches ?? [];
+      matchesProfiles = matches?.matchesProfile ?? [];
+      matchesIds= matches?.matches ?? [];
     });
   }
 
   Future<void> fetchMoreMatches() async {
     pageNum++;
-    List<ObjectBoundary?>? newMatches= await CommandApi().getMatches(
+    MatchResult? newMatches= await CommandApi().getMatches(
       SingletonUser.instance.email,
       privateDatingProfile,
       pageNum,
@@ -70,16 +69,19 @@ class _CheckMatchesScreen extends State<CheckMatchesScreen> {
       pageNum--;
     } else {
       setState(() {
-        potentialDates.addAll(newMatches);
+        matchesProfiles.addAll(newMatches.matchesProfile);
+        matchesIds.addAll(newMatches.matches);
+        debugPrint('matchesIds.toString()');
+        debugPrint(matchesIds.toString());
       });
     }
   }
 
-  Future<void> unMatch(ObjectBoundary? targetDatingProfile) async {
+  Future<void> unMatch(ObjectBoundary? targetDatingProfile, String? matchId) async {
     Map<String, dynamic>? publicProfile = targetDatingProfile?.objectDetails['publicProfile'];
     String? nickname = publicProfile?['nickName'];
 
-    bool? responseStatus = await CommandApi().likeDatingProfile(privateDatingProfile, targetDatingProfile,
+    bool? responseStatus = await CommandApi().unMatch(targetDatingProfile, matchId,
         SingletonUser.instance.email);
     if(responseStatus == null){
       await showPopupMessage(context, "Error unMatching", false);
@@ -93,15 +95,6 @@ class _CheckMatchesScreen extends State<CheckMatchesScreen> {
 
   }
 
-  void navigateToMatchesScreen(BuildContext context) {
-    Navigator.pushNamed(context, '/check_matches');
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => CheckMatchesScreen(userDetails: widget.userDetails),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -112,69 +105,6 @@ class _CheckMatchesScreen extends State<CheckMatchesScreen> {
         backgroundColor: Colors.pink,
         elevation: 0,
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            UserAccountsDrawerHeader(
-              accountName: Text(
-                SingletonUser.instance.username ?? '',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              accountEmail: Text(
-                SingletonUser.instance.email ?? '',
-                style: const TextStyle(
-                  fontSize: 16,
-                ),
-              ),
-              currentAccountPicture: CircleAvatar(
-                backgroundImage: NetworkImage(
-                  SingletonUser.instance.avatar ?? 'https://picsum.photos/200',
-                ),
-                backgroundColor: Colors.transparent,
-                radius: 60,
-              ),
-              decoration: const BoxDecoration(
-                color: Colors.pink,
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.person),
-              title: const Text(
-                'Edit Profile',
-                style: TextStyle(fontSize: 16),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/edit_profile');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.favorite),
-              title: const Text(
-                'Matches',
-                style: TextStyle(fontSize: 16),
-              ),
-              onTap: () {
-                navigateToMatchesScreen(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.logout),
-              title: const Text(
-                'Logout',
-                style: TextStyle(fontSize: 16),
-              ),
-              onTap: () {
-                _loginScreen(context);
-              },
-            ),
-          ],
-        ),
-      ),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -182,17 +112,17 @@ class _CheckMatchesScreen extends State<CheckMatchesScreen> {
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: potentialDates.length,
+                itemCount: matchesProfiles.length,
                 itemBuilder: (context, index) {
-                  ObjectBoundary? potentialDate = potentialDates[index];
-                  Map<String, dynamic>? publicProfile =
-                  potentialDate?.objectDetails['publicProfile'];
-                  String? profilePicture =
-                      publicProfile?['pictures']?.first ?? '';
+                  ObjectBoundary? matchesProfile = matchesProfiles[index];
+                  String? matchId = matchesIds[index];
+                  Map<String, dynamic>? publicProfile = matchesProfile?.objectDetails['publicProfile'];
+                  String? profilePicture = publicProfile?['pictures']?.first ?? '';
                   String? nickname = publicProfile?['nickName'];
                   String? bio = publicProfile?['bio'];
                   int? age = publicProfile?['age'];
                   String? gender = publicProfile?['gender'];
+                  String? phoneNumber = matchesProfile?.objectDetails['phoneNumber'];
 
                   return Card(
                     elevation: 2,
@@ -233,13 +163,19 @@ class _CheckMatchesScreen extends State<CheckMatchesScreen> {
                                   bio ?? '',
                                   style: const TextStyle(fontSize: 16),
                                 ),
+                                const SizedBox(height: 8),
+                                _buildProfileAttributeLabel('Phone Number'),
+                                Text(
+                                  phoneNumber ?? '',
+                                  style: const TextStyle(fontSize: 16),
+                                ),
                               ],
                             ),
                           ),
                           IconButton(
                             icon: const Icon(Icons.heart_broken),
                             onPressed: () {
-                              unMatch(potentialDate); // Pass the selected profile
+                              unMatch(matchesProfile, matchId); // Pass the selected profile and matchId
                             },
                           ),
                         ],

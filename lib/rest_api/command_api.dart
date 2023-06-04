@@ -129,9 +129,11 @@ class CommandApi extends BaseApi {
     return responseBody[responseBody.keys.first]['like_status'];
   }
 
-  Future<List<ObjectBoundary?>?> getMatches(String? email, ObjectBoundary? privateDatingProfile,
-      int pageNum) async {
+
+
+  Future<MatchResult?> getMatches(String? email, ObjectBoundary? privateDatingProfile, int pageNum) async {
     await UserApi().updateRole('MINIAPP_USER');
+
     // Create command
     Map<String, dynamic> command = {
       "commandId": {},
@@ -153,27 +155,37 @@ class CommandApi extends BaseApi {
       },
       body: jsonEncode(command),
     );
+
     await UserApi().updateRole('SUPERAPP_USER');
 
     if (response.statusCode != 200) {
       debugPrint('LOG --- Failed to load Matches. Response Type: ${response.statusCode}');
       return null;
     }
+
     Map<String, dynamic> responseBody = jsonDecode(response.body);
-    List<ObjectBoundary?> Matches = [];
+    List<String?> matches = [];
+    List<ObjectBoundary?> matchesProfile = [];
 
+    if (responseBody.isNotEmpty) {
+      var firstEntry = responseBody.entries.first;
+      dynamic firstValue = firstEntry.value;
+      firstValue.forEach((key, value) {
+        matchesProfile.add(ObjectBoundary.fromJson(value));
+        matches.add(key);
+      });
 
-    responseBody.forEach((key, value) {
-      List<dynamic> dataList = value as List<dynamic>;
-      for (var data in dataList) {
-        Matches.add(ObjectBoundary.fromJson(data));
-      }
-    });
+    }
 
-
-    return Matches;
+    return MatchResult(matches, matchesProfile);
   }
-  Future<bool?> unMatch(ObjectBoundary? myDatingProfile, ObjectBoundary? targetDatingProfile,
+
+
+
+
+
+
+  Future<bool?> unMatch(ObjectBoundary? myDatingProfile, String? targetMatch,
       String? email) async {
     await UserApi().updateRole('MINIAPP_USER');
     // Create command
@@ -181,12 +193,12 @@ class CommandApi extends BaseApi {
       "commandId": {},
       "command": "UNMATCH_PROFILE",
       "targetObject": {
-        "objectId": targetDatingProfile?.objectId
+        "objectId": {"superapp": "2023b.LiorAriely", "internalObjectId": targetMatch}
       },
       "invokedBy": {
         "userId": {"superapp": "2023b.LiorAriely", "email": email}
       },
-      "commandAttributes": {'myDatingProfileId': myDatingProfile?.objectId }
+      "commandAttributes": {}
     };
 
     // Post command
@@ -203,9 +215,64 @@ class CommandApi extends BaseApi {
       debugPrint('LOG --- Failed to like profile. Response Type: ${response.statusCode}');
       return null;
     }
+
     Map<String, dynamic> responseBody = jsonDecode(response.body);
-    return responseBody[responseBody.keys.first]['like_status'];
+    if(responseBody[responseBody.keys.first]['like_status'] == "not-removed"){
+      return false;
+    }
+    return true;
+  }
+
+  Future<List<ObjectBoundary?>?> getLikes(String? email, ObjectBoundary? userDetails,
+      ObjectBoundary? privateDatingProfile, int pageNum) async {
+    await UserApi().updateRole('MINIAPP_USER');
+    // Create command
+    Map<String, dynamic> command = {
+      "commandId": {},
+      "command": "GET_LIKES",
+      "targetObject": {
+        "objectId": privateDatingProfile?.objectId
+      },
+      "invokedBy": {
+        "userId": {"superapp": "2023b.LiorAriely", "email": email}
+      },
+      "commandAttributes": {'page': pageNum ,'size': 2}
+    };
+
+    // Post command
+    http.Response response = await http.post(
+      Uri.parse('http://$host:$portNumber/superapp/miniapp/DATING'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(command),
+    );
+    await UserApi().updateRole('SUPERAPP_USER');
+
+    if (response.statusCode != 200) {
+      debugPrint('LOG --- Failed to load potential dates. Response Type: ${response.statusCode}');
+      return null;
+    }
+    Map<String, dynamic> responseBody = jsonDecode(response.body);
+    List<ObjectBoundary?> potentialDates = [];
+
+
+    responseBody.forEach((key, value) {
+      List<dynamic> dataList = value as List<dynamic>;
+      for (var data in dataList) {
+        potentialDates.add(ObjectBoundary.fromJson(data));
+      }
+    });
+
+
+    return potentialDates;
   }
 
 
+}
+class MatchResult {
+  List<String?> matches;
+  List<ObjectBoundary?> matchesProfile;
+
+  MatchResult(this.matches, this.matchesProfile);
 }
