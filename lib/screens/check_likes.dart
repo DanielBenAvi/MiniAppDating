@@ -107,7 +107,7 @@ class _ScreenLikes extends State<ScreenLikes> {
                   String? bio = publicProfile?['bio'];
                   int? age = publicProfile?['age'];
                   String? gender = publicProfile?['gender'];
-                  String? phoneNumber = likedProfile?.objectDetails['phoneNumber'];
+
 
                   return Card(
                     elevation: 2,
@@ -146,12 +146,6 @@ class _ScreenLikes extends State<ScreenLikes> {
                                 _buildProfileAttributeLabel('Bio'),
                                 Text(
                                   bio ?? '',
-                                  style: const TextStyle(fontSize: 16),
-                                ),
-                                const SizedBox(height: 8),
-                                _buildProfileAttributeLabel('Phone Number'),
-                                Text(
-                                  phoneNumber ?? '',
                                   style: const TextStyle(fontSize: 16),
                                 ),
                               ],
