@@ -24,6 +24,7 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
   List<ObjectBoundary?> potentialDates = [];
   int pageNum = 0;
   late List<String> likes;
+  List<bool> likedProfiles = [];
 
   @override
   void initState() {
@@ -32,6 +33,8 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
     debugPrint(widget.privateDatingProfile.toString());
     likes = widget.privateDatingProfile!.objectDetails['likes'].
     toString().replaceAll('[', '').replaceAll(']', '').split(',').map((e) => e.trim()).toList();
+    likedProfiles = List<bool>.filled(potentialDates.length, false);
+
   }
 
   Future<void> fetchPotentialDates() async {
@@ -260,9 +263,13 @@ class _HomeDatingScreenState extends State<HomeDatingScreen> {
                             icon: likes.contains('${potentialDate!.objectId.superapp}_${potentialDate.objectId.internalObjectId}')?
                             const Icon(Icons.favorite):const Icon(Icons.favorite_border),
                             onPressed: () {
-                              likeProfile(potentialDate); // Pass
+                              String id = '${potentialDate!.objectId.superapp}_${potentialDate.objectId.internalObjectId}';
+                              if(!likes.contains(id)){
+                                likeProfile(potentialDate);
+                              }
+                               // Pass
                               setState(() {
-                                String id = '${potentialDate!.objectId.superapp}_${potentialDate.objectId.internalObjectId}';
+
                                 if(!likes.contains(id)){
                                   likes.add(id);
                                 }
