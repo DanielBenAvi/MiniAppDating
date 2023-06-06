@@ -25,6 +25,7 @@ User A has a choice to like user B based on his bio. Once both users “like” 
 
 	``` bash
 	docker run --name my-mongo-container -p27017:27017 -d mongo:latest
+	docker exec -it my-mongo-container mongosh
 	```
 
 ### Server
