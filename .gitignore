@@ -94,3 +94,4 @@ app.*.map.json
 /android/app/release
 .vscode
 lib/firebase_options.dart
+
